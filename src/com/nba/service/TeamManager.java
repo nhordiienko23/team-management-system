@@ -34,17 +34,21 @@ public class TeamManager {
         return new ArrayList<>(team.values());
     }
 
-    public Staff getHighestPaidStaff() {
-        Staff highestPaidStaff = null;
+    public List<Staff> getHighestPaidStaff() {
+        List<Staff> topEarned =new ArrayList<>();
         double highestSalary = -1;
         for (Staff staffCurrent : team.values()) {
             double currentTotal = staffCurrent.calculateTotalSalary();
             if (currentTotal > highestSalary) {
+
                 highestSalary = currentTotal;
-                highestPaidStaff = staffCurrent;
+                topEarned.clear();
+                topEarned.add(staffCurrent);
+            }else if(currentTotal == highestSalary){
+                topEarned.add(staffCurrent);
             }
         }
-        return highestPaidStaff;
+        return topEarned;
     }
 
 }

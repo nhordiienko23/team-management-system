@@ -29,6 +29,7 @@ public class Player extends Staff {
         }
     }
 
+    //If the rating is > 90, the bonus is 20% of the salary.
     @Override
     public double calculateBonus(){
         if(rating>90){

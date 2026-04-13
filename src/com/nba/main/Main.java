@@ -14,6 +14,7 @@ public class Main {
         for (Staff member : teamManager.getAllStaff()) {
             System.out.println(member);
         }
+
         System.out.println("\n--- Financial Analysis ---");
         List<Staff> stars = teamManager.getHighestPaidStaff();
         if (!stars.isEmpty()) {
@@ -32,41 +33,36 @@ public class Main {
             System.out.println("Top Rating in the Team: [" + bestRating + "] (" + topRanked.size() + " players found)");
 
             for (Player player : topRanked) {
-                // Используем %d для целого числа (рейтинга) и %s для строки
-                System.out.printf(" - %-15s | Position: %-3s | Rating: %d\n",
-                        player.getName(), player.getPosition(), player.getRating());
+                // %-10s выведет список позиций типа [SF, PF]
+                System.out.printf(" - %-15s | Positions: %-12s | Rating: %d\n",
+                        player.getName(), player.getPositions(), player.getRating());
             }
-        } else {
-            System.out.println("No players found in the system.");
         }
-
-        int idToRemove = 3;
-        if (teamManager.removeStaff(idToRemove)) {
-            System.out.println("\nStaff with ID " + idToRemove + " has been removed.");
-        }
-        int idToFined = 5;
-        System.out.println("\nGet staff by id " + idToFined + "\n" + teamManager.getStaffById(idToFined));
         System.out.println("\n--- Testing Exception ---");
         try {
             System.out.println(teamManager.getStaffById(10));
-        }catch (StaffNotFoundException e){
-            System.out.println("Search Failed: "+e.getMessage());
+        } catch (StaffNotFoundException e) {
+            System.out.println("Search Failed: " + e.getMessage());
         }
         try {
             teamManager.removeStaff(99);
-        }catch (StaffNotFoundException e){
-            System.out.println("Action Failed: "+e.getMessage());
+        } catch (StaffNotFoundException e) {
+            System.out.println("Action Failed: " + e.getMessage());
         }
 
     }
 
     private static TeamManager getTeamManager() {
-        Player jordan = new Player("Michael Jordan", 1000000, "SG", 99);
-        Player pippen = new Player("Scottie Pippen", 700000, "SF", 92);
-        Player rodman = new Player("Dennis Rodman", 500000, "PF", 88);
-        Player leBron = new Player("LeBron James", 900000, "PF", 98);
-        Player edwards = new Player("Anthony Edwards", 1000000, "PF", 98);
-        Coach coach = new Coach("Phill Jackson", 20000, 20, 11);
+        Player jordan = new Player("Michael Jordan", 1000000, 99, Position.SG, Position.SF);
+        Player pippen = new Player("Scottie Pippen", 700000, 92, Position.SF, Position.PF);
+        Player rodman = new Player("Dennis Rodman", 500000, 88, Position.PF, Position.C);
+
+        // Пример игрока с тремя позициями
+        Player leBron = new Player("LeBron James", 900000, 98, Position.SF, Position.PF, Position.PG);
+
+        Player edwards = new Player("Anthony Edwards", 1000000, 98, Position.SG);
+
+        Coach coach = new Coach("Phil Jackson", 20000, 20, 11);
         TeamManager teamManager = new TeamManager();
         teamManager.addStaff(jordan);
         teamManager.addStaff(pippen);

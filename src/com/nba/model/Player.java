@@ -2,23 +2,25 @@ package com.nba.model;
 
 import com.nba.exception.InvalidStaffDataException;
 
-import javax.management.InvalidAttributeValueException;
+import java.util.EnumSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Player extends Staff {
     private int rating;
-    private String position;
+    private Set<Position> positions;
 
-    public Player(String name, double baseSalary, String position, int rating) {
+    public Player(String name, double baseSalary, int rating, Position... positionArray) {
         super(name, baseSalary);
-        validatePosition(position);
-        this.position = position;
+        validatePosition(positionArray);
+        this.positions = EnumSet.of(positionArray[0], positionArray);
         validateRating(rating);
         this.rating = rating;
     }
 
-    private void validatePosition(String position) {
-        if (position == null || position.isEmpty()) {
-            throw new InvalidStaffDataException("Position can't be null or empty");
+    private void validatePosition(Position... positionArray) {
+        if (positionArray == null || positionArray.length == 0) {
+            throw new InvalidStaffDataException("Player must have at least one position");
         }
     }
 
@@ -32,13 +34,13 @@ public class Player extends Staff {
         return rating;
     }
 
-    public String getPosition() {
-        return position;
+    public Set<Position> getPositions() {
+        return positions;
     }
 
-    public void setPosition(String position) {
-        validatePosition(position);
-        this.position = position;
+    public void setPositions(Position... positionArray) {
+        validatePosition(positionArray);
+        this.positions = EnumSet.of(positionArray[0], positionArray);
     }
 
     public void setRating(int rating) {
@@ -57,7 +59,12 @@ public class Player extends Staff {
 
     @Override
     public String toString() {
-        return super.toString() + String.format(" | Pos: %s | Rating: %d | Bonus: $%,.0f", position, rating, calculateBonus());
+        // Красиво склеиваем позиции через запятую
+        String posString = positions.stream()
+                .map(Enum::name)
+                .collect(Collectors.joining("/"));
+
+        return super.toString() + String.format(" | Pos: %s | Rating: %d", posString, rating);
     }
 
 }

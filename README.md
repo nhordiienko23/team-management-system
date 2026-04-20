@@ -1,4 +1,4 @@
-# NBA Team Management System
+#Team Management System
 
 ## Description
 A backend system designed for managing professional sports rosters and financial data. The project focuses on object-oriented programming (OOP) principles, efficient data handling, and robust persistence using Java Serialization.

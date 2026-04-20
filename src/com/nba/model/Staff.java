@@ -1,9 +1,18 @@
 package com.nba.model;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.nba.exception.InvalidStaffDataException;
 
 import java.io.Serializable;
-
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.PROPERTY,
+        property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = Player.class, name = "player"),
+        @JsonSubTypes.Type(value = Coach.class, name = "coach")
+})
 public abstract class Staff implements Serializable, Taxable {
     private static final long serialVersionUID = 1L;
     private static int idCounter = 1;

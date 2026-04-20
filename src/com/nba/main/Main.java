@@ -5,7 +5,7 @@ import com.nba.exception.StaffNotFoundException;
 import com.nba.model.*;
 import com.nba.service.TeamManager;
 
-import java.util.ArrayList;
+import java.nio.file.Path;
 import java.util.List;
 
 public class Main {
@@ -28,7 +28,7 @@ public class Main {
         }
 
         System.out.println("\n--- Top Ranked Players (The GOATs) ---");
-        List<Player> topRanked = teamManager.getHighestRatingStaff();
+        List<Player> topRanked = teamManager.getHighestRatingPlayers();
 
         if (!topRanked.isEmpty()) {
             int bestRating = topRanked.get(0).getRating();
@@ -55,44 +55,38 @@ public class Main {
         testingDataValidation();
 
         System.out.println("\n--- Testing data writing to file ---");
-        String file = "nba_team.dat";
+        Path path = Path.of("nba_team.dat");
 
-        teamManager.saveTeamToFile(file);
+        teamManager.saveTeamToFile(path);
 
         System.out.println("\n--- Testing reading data from File ---");
         TeamManager loadedManager = new TeamManager();
-        loadedManager.loadTeamFromFile(file);
+        loadedManager.loadTeamFromFile(path);
         loadedManager.getAllStaff().forEach(System.out::println);
 
         System.out.println("\n--- Testing getAllBiggerThanBaseSalary  ---");
-        List<Staff> getAllBiggerThanBaseSalary = teamManager.getAllBiggerThanBaseSalary(700000);
+        List<Staff> getAllBiggerThanBaseSalary = teamManager.getStaffByBaseSalary(700000);
         for (Staff staff :getAllBiggerThanBaseSalary){
             System.out.println("name: "+staff.getName()+" base salary "+staff.getBaseSalary());
         }
 
         System.out.println("\n--- Testing getByName  ---");
-        Player towns = new Player("Karl Anthony Towns", 1, 98, Position.SG);
-        teamManager.addStaff(towns);
         List<Staff> getByName = teamManager.getByName("Anthony");
         for (Staff staff :getByName){
             System.out.println("name: "+staff.getName());
         }
         System.out.println("\n--- Testing getAllCoachesBiggerThanExperienceYears  ---");
-        Coach kerr = new Coach("Steve Kerr", 100000,15,4);
-        Coach redick = new Coach("JJ Redick", 70000,5,0);
-        teamManager.addStaff(kerr);
-        teamManager.addStaff(redick);
-        List<Coach> getAllCoachesBiggerThanExperienceYears = teamManager.getAllCoachesBiggerThanExperienceYears(15);
+        List<Coach> getAllCoachesBiggerThanExperienceYears = teamManager.getCoachByExperienceYears(15);
         for (Coach coach :getAllCoachesBiggerThanExperienceYears){
             System.out.println("Name: "+coach.getName()+" ExperienceYears "+coach.getExperienceYears());
         }
         System.out.println("\n--- Testing getCoachesBiggerThanChampionshipWon  ---");
-        List<Coach> getCoachesBiggerThanChampionshipWon = teamManager.getCoachesBiggerThanChampionshipWon(1);
+        List<Coach> getCoachesBiggerThanChampionshipWon = teamManager.getCoachesByChampionshipWon(1);
         for (Coach coach:getCoachesBiggerThanChampionshipWon){
             System.out.println("Name: "+coach.getName()+" ChampionshipWon "+coach.getChampionshipsWon());
         }
         System.out.println("\n--- Testing getPlayersBiggerThanBonus  ---");
-        List<Player> getPlayersBiggerThanBonus = teamManager.getPlayersBiggerThanBonus(1000);
+        List<Player> getPlayersBiggerThanBonus = teamManager.getPlayersByBonus(1000);
         for (Player player:getPlayersBiggerThanBonus){
             System.out.println("Name: "+player.getName()+" bonus "+player.calculateBonus());
         }
@@ -135,8 +129,10 @@ public class Main {
         Player leBron = new Player("LeBron James", 900000, 98, Position.SF, Position.PF, Position.PG);
 
         Player edwards = new Player("Anthony Edwards", 1000000, 98, Position.SG);
-
+        Player towns = new Player("Karl Anthony Towns", 1, 98, Position.SG);
         Coach coach = new Coach("Phil Jackson", 20000, 20, 11);
+        Coach kerr = new Coach("Steve Kerr", 100000,15,4);
+        Coach redick = new Coach("JJ Redick", 70000,5,0);
         TeamManager teamManager = new TeamManager();
         teamManager.addStaff(jordan);
         teamManager.addStaff(pippen);
@@ -144,6 +140,9 @@ public class Main {
         teamManager.addStaff(leBron);
         teamManager.addStaff(edwards);
         teamManager.addStaff(coach);
+        teamManager.addStaff(towns);
+        teamManager.addStaff(kerr);
+        teamManager.addStaff(redick);
         return teamManager;
     }
 }

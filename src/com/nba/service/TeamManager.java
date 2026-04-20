@@ -1,7 +1,6 @@
 package com.nba.service;
 
 import com.nba.exception.InvalidArgumentsException;
-import com.nba.exception.InvalidStaffDataException;
 import com.nba.exception.StaffNotFoundException;
 import com.nba.model.Coach;
 import com.nba.model.Player;
@@ -10,6 +9,7 @@ import com.nba.model.Staff;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.util.*;
 
 @Service
@@ -73,15 +73,15 @@ public class TeamManager {
         return result;
     }
 
-    public List<Player> getPlayersBiggerThanBonus(double bonus) {
-        if (bonus < 0) {
-            throw new InvalidArgumentsException("The bonus should be positive or 0");
+    public List<Player> getPlayersByBonus(double minBonus) {
+        if (minBonus < 0) {
+            throw new InvalidArgumentsException("The minBonus should be positive or 0");
         }
         List<Player> players = new ArrayList<>();
         for (Staff staff : team.values()) {
             if (staff instanceof Player) {
                 Player currentPlayer = (Player) staff;
-                if (currentPlayer.calculateBonus() >= bonus) {
+                if (currentPlayer.calculateBonus() >= minBonus) {
                     players.add(currentPlayer);
                 }
             }
@@ -89,15 +89,15 @@ public class TeamManager {
         return players;
     }
 
-    public List<Coach> getCoachesBiggerThanChampionshipWon(int championshipWon) {
-        if (championshipWon < 0) {
+    public List<Coach> getCoachesByChampionshipWon(int minChampionshipWon) {
+        if (minChampionshipWon < 0) {
             throw new InvalidArgumentsException("The championship won should be positive or 0");
         }
         List<Coach> coaches = new ArrayList<>();
         for (Staff staff : team.values()) {
             if (staff instanceof Coach) {
                 Coach coach = (Coach) staff;
-                if (coach.getChampionshipsWon() >= championshipWon) {
+                if (coach.getChampionshipsWon() >= minChampionshipWon) {
                     coaches.add(coach);
                 }
             }
@@ -105,15 +105,15 @@ public class TeamManager {
         return coaches;
     }
 
-    public List<Coach> getAllCoachesBiggerThanExperienceYears(int experienceYears) {
-        if (experienceYears < 0) {
+    public List<Coach> getCoachByExperienceYears(int minExperienceYears) {
+        if (minExperienceYears < 0) {
             throw new InvalidArgumentsException("The experience years should be positive or 0");
         }
         List<Coach> coaches = new ArrayList<>();
         for (Staff staff : team.values()) {
             if (staff instanceof Coach) {
                 Coach coachCurrent = (Coach) staff;
-                if (coachCurrent.getExperienceYears() >= experienceYears) {
+                if (coachCurrent.getExperienceYears() >= minExperienceYears) {
                     coaches.add(coachCurrent);
                 }
             }
@@ -135,20 +135,20 @@ public class TeamManager {
         return result;
     }
 
-    public List<Staff> getAllBiggerThanBaseSalary(double baseSalary) {
-        if (baseSalary <= 0) {
+    public List<Staff> getStaffByBaseSalary(double minBaseSalary) {
+        if (minBaseSalary <= 0) {
             throw new InvalidArgumentsException("Base salary must be bigger than 0");
         }
         List<Staff> result = new ArrayList<>();
         for (Staff staff : team.values()) {
-            if (staff.getBaseSalary() >= baseSalary) {
+            if (staff.getBaseSalary() >= minBaseSalary) {
                 result.add(staff);
             }
         }
         return result;
     }
 
-    public List<Player> getHighestRatingStaff() {
+    public List<Player> getHighestRatingPlayers() {
         List<Player> topRanked = new ArrayList<>();
         int highestRank = -1;
         for (Staff staffCurrent : team.values()) {
@@ -184,19 +184,19 @@ public class TeamManager {
         return topEarned;
     }
 
-    public void saveTeamToFile(String filename) {
-        try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream(filename))) {
+    public void saveTeamToFile(Path path) {
+        try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream(path.toFile()))) {
             objectOutputStream.writeObject(team);
-            System.out.println("Team data saved successfully to " + filename);
+            System.out.println("Team data saved successfully to " + path.getFileName());
         } catch (IOException e) {
             System.err.println("Error saving team: " + e.getMessage());
         }
     }
 
-    public void loadTeamFromFile(String filename) {
-        try (ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(filename))) {
+    public void loadTeamFromFile(Path path) {
+        try (ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(path.toFile()))) {
             team = (Map<Integer, Staff>) objectInputStream.readObject();
-            System.out.println("Team data loaded successfully from " + filename);
+            System.out.println("Team data loaded successfully from " + path.getFileName());
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("Error loading team: " + e.getMessage());
         }

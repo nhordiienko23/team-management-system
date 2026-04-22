@@ -32,6 +32,13 @@ public class TeamManagerController {
 
     @PutMapping("staff/{id}")
     public String updateStaff(@PathVariable int id, @RequestBody StaffDto dto) {
+        teamManager.updateStaff(id, dto);
+        teamManager.saveTeamToFile(path);
+        return "Staff with ID " + id + " updated successfully!";
+    }
+
+    @PatchMapping("staff/{id}")
+    public String patchStaff(@PathVariable int id, @RequestBody StaffDto dto) {
         teamManager.patchStaff(id, dto);
         teamManager.saveTeamToFile(path);
         return "Staff with ID " + id + " updated successfully!";
@@ -50,15 +57,17 @@ public class TeamManagerController {
     }
 
     @GetMapping("/staff")
-    public List<Staff> getAllStaff(){
+    public List<Staff> getAllStaff() {
         return teamManager.getAllStaff();
     }
+
     @GetMapping("/players")
     public List<Player> getAllPlayers() {
         return teamManager.getPlayers();
     }
+
     @GetMapping("coaches")
-    public List<Coach> getAllCoaches(){
+    public List<Coach> getAllCoaches() {
         return teamManager.getCoaches();
     }
 

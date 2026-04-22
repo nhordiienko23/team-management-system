@@ -31,6 +31,57 @@ public class TeamManager {
         throw new InvalidStaffDataException("Unknown staff type");
     }
 
+    public void validateStaffDtoToUpdate(int id,StaffDto dto){
+        Staff existingStaff = team.get(id);
+        if ("player".equalsIgnoreCase(dto.type)&& !(existingStaff instanceof Player)){
+            throw new InvalidStaffDataException("type should be player because existing staff is player");
+        }
+        if ("coach".equalsIgnoreCase(dto.type)&& !(existingStaff instanceof Coach)){
+            throw new InvalidStaffDataException("type should be coach because existing staff is coach");
+        }
+        if (dto.name== null || dto.name.isEmpty()){
+            throw new InvalidStaffDataException("Name should be not empty");
+        }
+        if (dto.baseSalary == 0){
+            throw new InvalidStaffDataException("Base salary should be not empty");
+        }
+        if("player".equalsIgnoreCase(dto.type)){
+            if (dto.rating == 0){
+                throw new InvalidStaffDataException("Rating should be not empty");
+            }
+            if (dto.positions == null || dto.positions.isEmpty()){
+                throw new InvalidStaffDataException("Positions should be not empty and not equal 0");
+            }
+        }
+        if ("coach".equalsIgnoreCase(dto.type)){
+            if (dto.championshipsWon == 0){
+                throw new InvalidStaffDataException("Championship won should be not empty");
+            }
+            if (dto.experienceYears == 0){
+                throw new InvalidStaffDataException("Experience years should be not empty");
+            }
+        }
+    }
+
+    public void updateStaff(int id, StaffDto dto) {
+        validateStaffExists(id);
+        Staff existingStaff = team.get(id);
+        validateStaffDtoToUpdate(id,dto);
+        existingStaff.setName(dto.name);
+        existingStaff.setBaseSalary(dto.baseSalary);
+        if ("player".equalsIgnoreCase(dto.type)&& existingStaff instanceof Player){
+            Player existingPlayer = (Player) existingStaff;
+            existingPlayer.setRating(dto.rating);
+            existingPlayer.setPositions(dto.positions.toArray(new Position[0]));
+        } else if ("coach".equalsIgnoreCase(dto.type)&& existingStaff instanceof Coach){
+            Coach existingCoach = (Coach) existingStaff;
+            existingCoach.setChampionshipsWon(dto.championshipsWon);
+            existingCoach.setExperienceYears(dto.experienceYears);
+        } else {
+            throw new InvalidStaffDataException("Type of Staff doesn't match to exist type");
+        }
+    }
+
     public void patchStaff(int id, StaffDto dto) {
         validateStaffExists(id);
         Staff existingStaff = team.get(id);
@@ -66,7 +117,7 @@ public class TeamManager {
             throw new InvalidStaffDataException("Ошибка: ID объекта не был присвоен при создании");
         }
         if (team.containsKey(staff.getId())) {
-            throw new InvalidStaffDataException("Сотрудник с таким ID уже существует");
+            throw new InvalidStaffDataException("Staff with ID" + staff.getId() + " уже существует");
         }
         team.put(staff.getId(), staff);
 

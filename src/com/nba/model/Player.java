@@ -1,19 +1,36 @@
 package com.nba.model;
 
 import com.nba.exception.InvalidStaffDataException;
-
-import java.util.EnumSet;
+import jakarta.persistence.*;
 import java.util.Set;
-import java.util.stream.Collectors;
+
+@Entity
+@Table(name = "players")
+@PrimaryKeyJoinColumn(name = "staff_id")
 
 public class Player extends Staff {
+
     private int rating;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "player_positions", joinColumns = @JoinColumn(name = "staff_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "position")
     private Set<Position> positions;
 
+    protected Player() {}
+
+    /**
+     * Constructs a new Player instance.
+     * * @param name         Player's full name
+     * @param baseSalary   Player's base salary
+     * @param rating       Player's rating (0-100)
+     * @param positionArray Varargs of {@link Position} assigned to the player
+     */
     public Player(String name, double baseSalary, int rating, Position... positionArray) {
         super(name, baseSalary);
         validatePosition(positionArray);
-        this.positions = EnumSet.of(positionArray[0], positionArray);
+        this.positions = Set.of(positionArray);
         validateRating(rating);
         this.rating = rating;
     }
@@ -30,41 +47,29 @@ public class Player extends Staff {
         }
     }
 
-    public int getRating() {
-        return rating;
+    /**
+     * Calculates bonus based on player performance.
+     * Players with a rating above 90 receive a 20% salary bonus.
+     * * @return Calculated bonus amount
+     */
+    @Override
+    public double calculateBonus() {
+        return (rating > 90) ? getBaseSalary() * 0.2 : 0;
     }
 
-    public Set<Position> getPositions() {
-        return positions;
-    }
-
-    public void setPositions(Position... positionArray) {
-        validatePosition(positionArray);
-        this.positions = EnumSet.of(positionArray[0], positionArray);
-    }
+    public int getRating() { return rating; }
 
     public void setRating(int rating) {
         validateRating(rating);
         this.rating = rating;
     }
 
-    //If the rating is > 90, the bonus for player is 20% of the salary.
-    @Override
-    public double calculateBonus() {
-        if (rating > 90) {
-            return getBaseSalary() * 0.2;
-        }
-        return 0;
-    }
+    public Set<Position> getPositions() { return positions; }
+
+    public void setPositions(Set<Position> positions) { this.positions = positions; }
 
     @Override
     public String toString() {
-        // Красиво склеиваем позиции через запятую
-        String posString = positions.stream()
-                .map(Enum::name)
-                .collect(Collectors.joining("/"));
-
-        return super.toString() + String.format(" | Pos: %s | Rating: %d", posString, rating);
+        return "Player: " + getName() + " | Salary: $" + getBaseSalary() + " | Rating: " + rating + " | Positions: " + positions;
     }
-
 }

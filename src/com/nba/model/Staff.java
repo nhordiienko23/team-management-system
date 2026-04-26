@@ -1,12 +1,14 @@
 package com.nba.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.nba.exception.InvalidStaffDataException;
+import jakarta.persistence.*;
 
-import java.io.Serializable;
+@Entity
+@Table(name = "staff")
+@Inheritance(strategy = InheritanceType.JOINED)
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.PROPERTY,
@@ -15,71 +17,53 @@ import java.io.Serializable;
         @JsonSubTypes.Type(value = Player.class, name = "player"),
         @JsonSubTypes.Type(value = Coach.class, name = "coach")
 })
-public abstract class Staff implements Serializable, Taxable {
-    private static final long serialVersionUID = 1L;
-    private static int idCounter = 1;
-    private final int id;
+public abstract class Staff implements Taxable {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id; // Используем Integer для JPA
+
+    @Column(nullable = false)
     private String name;
+
+    @Column(nullable = false)
     private double baseSalary;
 
+    protected Staff() {}
 
     public Staff(@JsonProperty("name") String name, @JsonProperty("baseSalary") double baseSalary) {
-        this.id = idCounter++;
         validateName(name);
         this.name = name;
         validateBaseSalary(baseSalary);
         this.baseSalary = baseSalary;
     }
 
-    public static void setNextId(int nextId) {
-        idCounter = nextId;
-    }
-    private void validateName(String name){
-        if(name ==null || name.isEmpty()){
+    private void validateName(String name) {
+        if (name == null || name.isEmpty()) {
             throw new InvalidStaffDataException("Name can't be null or empty");
         }
     }
-    private void validateBaseSalary(double baseSalary){
-        if(baseSalary <=0){
+
+    private void validateBaseSalary(double baseSalary) {
+        if (baseSalary <= 0) {
             throw new InvalidStaffDataException("Base salary must be bigger than 0");
         }
     }
+
     public abstract double calculateBonus();
 
-    public int getId() {
-        return id;
-    }
+    public Integer getId() { return id; }
 
-    public double getBaseSalary() {
-        return baseSalary;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { validateName(name); this.name = name; }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        validateName(name);
-        this.name = name;
-    }
-
-    public void setBaseSalary(double baseSalary) {
-        validateBaseSalary(baseSalary);
-        this.baseSalary = baseSalary;
-    }
+    public double getBaseSalary() { return baseSalary; }
+    public void setBaseSalary(double baseSalary) { validateBaseSalary(baseSalary); this.baseSalary = baseSalary; }
 
     @Override
-    public double calculateTax() {
-        return calculateTotalSalary() * TAX_RATE;
-    }
+    public double calculateTax() { return calculateTotalSalary() * TAX_RATE; }
 
-    public double calculateTotalSalary(){
-        return baseSalary+calculateBonus();
-    }
-    @Override
-    public String toString() {
-        double total = baseSalary + calculateBonus();
-        return String.format("ID: %03d | Name: %-15s | Total Pay: $%,.0f | Tax: $%,.0f",
-                id, name, calculateTotalSalary(), calculateTax());
-    }
+    public double calculateTotalSalary() { return baseSalary + calculateBonus(); }
+
+
 }

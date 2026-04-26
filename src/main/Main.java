@@ -1,16 +1,8 @@
-package com.nba.main;
-
-import com.nba.exception.InvalidStaffDataException;
-import com.nba.exception.StaffNotFoundException;
-import com.nba.model.*;
-import com.nba.service.TeamManager;
-
-import java.nio.file.Path;
-import java.util.List;
+package main;
 
 public class Main {
     public static void main(String[] args) {
-
+/*
         TeamManager teamManager = getTeamManager();
         System.out.println("=== Chicago Bulls Roster ===");
         for (Staff member : teamManager.getAllStaff()) {
@@ -53,16 +45,6 @@ public class Main {
         }
         System.out.println("\n--- Testing Data Validation (Fail-Fast) ---");
         testingDataValidation();
-
-        System.out.println("\n--- Testing data writing to file ---");
-        Path path = Path.of("nba_team.dat");
-
-        teamManager.saveTeamToFile(path);
-
-        System.out.println("\n--- Testing reading data from File ---");
-        TeamManager loadedManager = new TeamManager();
-        loadedManager.loadTeamFromFile(path);
-        loadedManager.getAllStaff().forEach(System.out::println);
 
         System.out.println("\n--- Testing getAllBiggerThanBaseSalary  ---");
         List<Staff> getAllBiggerThanBaseSalary = teamManager.getStaffByBaseSalary(700000);
@@ -133,7 +115,7 @@ public class Main {
         Coach coach = new Coach("Phil Jackson", 20000, 20, 11);
         Coach kerr = new Coach("Steve Kerr", 100000,15,4);
         Coach redick = new Coach("JJ Redick", 70000,5,0);
-        TeamManager teamManager = new TeamManager();
+        /*TeamManager teamManager = new TeamManager();
         teamManager.addStaff(jordan);
         teamManager.addStaff(pippen);
         teamManager.addStaff(rodman);
@@ -143,6 +125,9 @@ public class Main {
         teamManager.addStaff(towns);
         teamManager.addStaff(kerr);
         teamManager.addStaff(redick);
+
         return teamManager;
+*/
     }
+
 }

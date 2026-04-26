@@ -1,10 +1,17 @@
 package com.nba.model;
 
 import com.nba.exception.InvalidStaffDataException;
+import jakarta.persistence.*;
 
+@Entity
+@Table(name = "coaches")
+@PrimaryKeyJoinColumn(name = "staff_id")
 public class Coach extends Staff {
+
     private int experienceYears;
     private int championshipsWon;
+
+    protected Coach() {}
 
     public Coach(String name, double baseSalary, int experienceYears, int championshipsWon) {
         super(name, baseSalary);
@@ -16,10 +23,7 @@ public class Coach extends Staff {
 
     private void validateChampionshipsWon(int championshipsWon) {
         if (championshipsWon < 0) {
-            throw new InvalidStaffDataException("Championships Won must be positive number or null");
-        }
-        if (championshipsWon < this.championshipsWon) {
-            throw new InvalidStaffDataException("Championships Won cannot decrease!");
+            throw new InvalidStaffDataException("Championships Won must be positive number");
         }
     }
 
@@ -27,28 +31,14 @@ public class Coach extends Staff {
         if (experienceYears <= 0) {
             throw new InvalidStaffDataException("Experience year must be positive number");
         }
-        if (experienceYears < this.experienceYears) {
-            throw new InvalidStaffDataException("Experience year cannot decrease!");
-        }
     }
 
-    // The coach receives 5% for each year of experience + a fixed reward for each ring (championship)
     @Override
     public double calculateBonus() {
-        double expBonus = getBaseSalary() * (experienceYears * 0.05);
-        double ringBonus = championshipsWon * 50000;
-        return expBonus + ringBonus;
+        return getBaseSalary() * (experienceYears * 0.05) + (championshipsWon * 50000);
     }
 
-    @Override
-    public String toString() {
-        return super.toString() + String.format(" | Role: Coach | Exp: %d yrs | Rings: %d | Bonus: $%,.0f",
-                experienceYears, championshipsWon, calculateBonus());
-    }
-
-    public int getChampionshipsWon() {
-        return championshipsWon;
-    }
+    public int getChampionshipsWon() { return championshipsWon; }
 
     public void setChampionshipsWon(int championshipsWon) {
         validateChampionshipsWon(championshipsWon);
@@ -60,7 +50,9 @@ public class Coach extends Staff {
         this.experienceYears = experienceYears;
     }
 
-    public int getExperienceYears() {
-        return experienceYears;
+    public int getExperienceYears() { return experienceYears; }
+    @Override
+    public String toString() {
+        return "Coach: " + getName() + " | Salary: $" + getBaseSalary() + " | Experience: " + experienceYears + " years | Championships: " + championshipsWon;
     }
 }

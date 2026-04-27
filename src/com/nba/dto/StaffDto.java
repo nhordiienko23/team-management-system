@@ -2,6 +2,7 @@ package com.nba.dto;
 
 import com.nba.model.Position;
 import jakarta.validation.constraints.*;
+
 import java.util.List;
 
 public class StaffDto {
@@ -16,7 +17,8 @@ public class StaffDto {
     public double baseSalary;
 
     // fields for player
-    @Min(0) @Max(100)
+    @Min(0)
+    @Max(100)
     public int rating;
 
     public List<Position> positions;
@@ -27,4 +29,17 @@ public class StaffDto {
 
     @Min(0)
     public int championshipsWon;
+
+    @Override
+    public String toString() {
+        java.util.List<String> fields = new java.util.ArrayList<>();
+        if (type != null && !type.isEmpty()) fields.add("type='" + type + "'");
+        if (name != null && !name.isEmpty()) fields.add("name='" + name + "'");
+        if (baseSalary != 0) fields.add("baseSalary=" + baseSalary);
+        if (rating != 0) fields.add("rating=" + rating);
+        if (positions != null && !positions.isEmpty()) fields.add("positions=" + positions);
+        if (experienceYears != 0) fields.add("experienceYears=" + experienceYears);
+        if (championshipsWon != 0) fields.add("championshipsWon=" + championshipsWon);
+        return "StaffDto{" + String.join(", ", fields) + "}";
+    }
 }

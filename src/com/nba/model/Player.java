@@ -7,7 +7,6 @@ import java.util.Set;
 @Entity
 @Table(name = "players")
 @PrimaryKeyJoinColumn(name = "staff_id")
-
 public class Player extends Staff {
 
     private int rating;
@@ -22,9 +21,10 @@ public class Player extends Staff {
 
     /**
      * Constructs a new Player instance.
-     * * @param name         Player's full name
-     * @param baseSalary   Player's base salary
-     * @param rating       Player's rating (0-100)
+     *
+     * @param name          Player's full name
+     * @param baseSalary    Player's base salary
+     * @param rating        Player's rating (0-100)
      * @param positionArray Varargs of {@link Position} assigned to the player
      */
     public Player(String name, double baseSalary, int rating, Position... positionArray) {
@@ -50,7 +50,8 @@ public class Player extends Staff {
     /**
      * Calculates bonus based on player performance.
      * Players with a rating above 90 receive a 20% salary bonus.
-     * * @return Calculated bonus amount
+     *
+     * @return Calculated bonus amount
      */
     @Override
     public double calculateBonus() {

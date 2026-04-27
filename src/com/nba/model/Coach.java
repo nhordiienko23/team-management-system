@@ -23,13 +23,13 @@ public class Coach extends Staff {
 
     private void validateChampionshipsWon(int championshipsWon) {
         if (championshipsWon < 0) {
-            throw new InvalidStaffDataException("Championships Won must be positive number");
+            throw new InvalidStaffDataException("Championships Won must be a positive number");
         }
     }
 
     private void validateExperienceYear(int experienceYears) {
         if (experienceYears <= 0) {
-            throw new InvalidStaffDataException("Experience year must be positive number");
+            throw new InvalidStaffDataException("Experience years must be a positive number");
         }
     }
 
@@ -51,6 +51,7 @@ public class Coach extends Staff {
     }
 
     public int getExperienceYears() { return experienceYears; }
+
     @Override
     public String toString() {
         return "Coach: " + getName() + " | Salary: $" + getBaseSalary() + " | Experience: " + experienceYears + " years | Championships: " + championshipsWon;

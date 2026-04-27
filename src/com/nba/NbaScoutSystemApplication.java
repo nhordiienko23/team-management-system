@@ -7,11 +7,13 @@ import com.nba.service.TeamManager;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 
 import java.util.List;
 import java.util.TimeZone;
 
 @SpringBootApplication
+@EnableCaching
 public class NbaScoutSystemApplication implements CommandLineRunner {
 
     private final TeamManager teamManager;

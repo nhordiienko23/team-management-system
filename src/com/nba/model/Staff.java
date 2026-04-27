@@ -21,7 +21,7 @@ public abstract class Staff implements Taxable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id; // Используем Integer для JPA
+    private Integer id; // Use Integer for JPA
 
     @Column(nullable = false)
     private String name;
@@ -46,7 +46,7 @@ public abstract class Staff implements Taxable {
 
     private void validateBaseSalary(double baseSalary) {
         if (baseSalary <= 0) {
-            throw new InvalidStaffDataException("Base salary must be bigger than 0");
+            throw new InvalidStaffDataException("Base salary must be greater than 0");
         }
     }
 
@@ -64,6 +64,4 @@ public abstract class Staff implements Taxable {
     public double calculateTax() { return calculateTotalSalary() * TAX_RATE; }
 
     public double calculateTotalSalary() { return baseSalary + calculateBonus(); }
-
-
 }

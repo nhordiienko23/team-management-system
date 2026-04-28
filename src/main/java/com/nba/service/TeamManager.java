@@ -27,6 +27,10 @@ public class TeamManager {
     }
 
     private <T> Page<T> toPage(List<T> list, Pageable pageable) {
+        // Safe check to handle Unpaged objects
+        if (pageable.isUnpaged()) {
+            return new PageImpl<>(list);
+        }
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), list.size());
         if (start > list.size()) return new PageImpl<>(Collections.emptyList(), pageable, list.size());
@@ -52,7 +56,6 @@ public class TeamManager {
     public Page<Staff> getAllStaff(Pageable pageable) {
         return staffRepository.findAll(PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("id").ascending()));
     }
-
 
     public void validateStaffDtoToUpdate(int id, StaffDto dto) {
         Staff existingStaff = getStaffById(id);

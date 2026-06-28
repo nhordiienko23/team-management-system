@@ -16,7 +16,7 @@ A production-ready Spring Boot backend application for managing professional spo
 
 ## 🛠 Tech Stack
 
-*Java 21
+* Java 21
 * Spring Boot 3
 * Spring Data JPA
 * PostgreSQL 16

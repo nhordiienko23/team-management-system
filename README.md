@@ -1,22 +1,28 @@
 # Team Management System
 
-A robust Spring Boot backend application designed for managing professional sports rosters and financial data. The project emphasizes clean architecture, API reliability, and effective data management using Object-Oriented Programming (OOP) principles, now fully integrated with PostgreSQL and Docker.
+A production-ready Spring Boot backend application for managing professional sports teams, player rosters, and financial data. The project focuses on clean architecture, scalable REST API design, and reliable data persistence using PostgreSQL and Spring Data JPA.
+
 
 ## 🚀 Key Features
 
 * RESTful API: Full CRUD operations for team management with sophisticated data filtering (salaries, rankings, experience, positions).
-* Data Persistence: Reliable storage utilizing PostgreSQL with Spring Data JPA.
-* Containerization: Fully dockerized environment with PostgreSQL and application services orchestration via Docker Compose.
-* Error Handling: Global Exception Handling (@ControllerAdvice) for standardized API responses and data integrity validation.
+* RESTful API with full CRUD operations for team and player management
+* Advanced server-side filtering (salary, experience, rankings, positions)
+* Data persistence with PostgreSQL and Spring Data JPA
+* Centralized exception handling using `@ControllerAdvice`
+* Input validation for request integrity and safety
 * API Documentation: Integrated Swagger UI for interactive API testing.
+* Dockerized application with Docker Compose orchestration
 
 ## 🛠 Tech Stack
 
-* Framework: Spring Boot 3
-* Language: Java 21
-* Database: PostgreSQL 16
-* Orchestration: Docker & Docker Compose
-* Documentation: Springdoc OpenAPI (Swagger UI)
+*Java 21
+* Spring Boot 3
+* Spring Data JPA
+* PostgreSQL 16
+* Maven
+* Docker & Docker Compose
+* Springdoc OpenAPI (Swagger UI)
 
 ## 🚀 Quick Start
 

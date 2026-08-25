@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/team_managment_db}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/team_management_system_db}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:password}
     driver-class-name: org.postgresql.Driver
@@ -12,3 +12,4 @@ spring:
       hibernate:
         jdbc:
           time_zone: UTC
+

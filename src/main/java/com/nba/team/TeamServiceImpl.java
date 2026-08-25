@@ -14,7 +14,7 @@ import java.util.List;
 
 @Service
 @AllArgsConstructor
- class TeamServiceImpl implements TeamService {
+class TeamServiceImpl implements TeamService {
 
     private final TeamRepository teamRepository;
     private final TeamMapper teamMapper;
@@ -124,6 +124,7 @@ import java.util.List;
         coachToRemove.setTeam(null);
     }
 
+
     @Override
     @Transactional
     public void fireAllTeamMembers(Long teamId) {
@@ -131,6 +132,19 @@ import java.util.List;
         team.getTeamMembers().forEach(teamMember -> teamMember.setTeam(null));
         team.getTeamMembers().clear();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ResponseGroupType getTeamLineup(Long teamId) {
+        return teamMapper.toPlayerLineup(findTeamById(teamId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ResponseGroupType getCoachingStaff(Long teamId) {
+        return teamMapper.toCoachingStaff(findTeamById(teamId));
+    }
+
 
     private Player findPlayerById(Long playerId) {
         return playerRepository.findById(playerId).orElseThrow(() ->

@@ -14,4 +14,6 @@ public interface TeamService {
     void deletePlayerFromTeam(Long teamId, Long playerId);
     void deleteCoachFromTeam(Long teamId, Long coachId);
     void fireAllTeamMembers(Long teamId);
+    ResponseGroupType getTeamLineup(Long teamId);
+    ResponseGroupType getCoachingStaff(Long teamId);
 }

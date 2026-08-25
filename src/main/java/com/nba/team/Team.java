@@ -1,11 +1,14 @@
 package com.nba.team;
 
 
+import com.nba.coach.Coach;
 import com.nba.core.model.TeamMember;
+import com.nba.player.Player;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -26,6 +29,21 @@ public class Team {
     @Column(nullable = false)
     private Integer championshipTitleCount;
 
+    @Builder.Default
     @OneToMany(mappedBy = "team",cascade = {CascadeType.PERSIST,CascadeType.MERGE}, fetch = FetchType.LAZY)
-    private List<TeamMember> teamMembers;
+    private List<TeamMember> teamMembers = new ArrayList<>();
+
+    public List<Player> getPlayers(){
+        return teamMembers.stream()
+                .filter(Player.class::isInstance)
+                .map(Player.class::cast)
+                .toList();
+    }
+
+    public List<Coach> getCoaches(){
+        return teamMembers.stream()
+                .filter(Coach.class::isInstance)
+                .map(Coach.class::cast)
+                .toList();
+    }
 }

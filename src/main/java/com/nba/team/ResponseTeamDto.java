@@ -1,5 +1,6 @@
 package com.nba.team;
 
+import com.nba.core.dto.response.MemberShortDto;
 import lombok.Builder;
 
 import java.time.LocalDate;
@@ -11,6 +12,7 @@ public record ResponseTeamDto(
         String name,
         Integer championshipTitleCount,
         LocalDate creationDate,
-        List<String> teamMembers
+        List<MemberShortDto> coaches,
+        List<MemberShortDto> players
 ) {
 }

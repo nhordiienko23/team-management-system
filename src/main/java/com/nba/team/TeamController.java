@@ -108,5 +108,14 @@ public class TeamController {
         return ResponseEntity.ok(teamService.searchTeams(filter));
     }
 
+    @GetMapping("/{teamId}/team-lineup")
+    public ResponseEntity<ResponseGroupType> getTeamLineup(@PathVariable Long teamId){
+        return ResponseEntity.ok(teamService.getTeamLineup(teamId));
+    }
+    @GetMapping("/{teamId}/coaching-staff")
+    public ResponseEntity<ResponseGroupType> getCoachingStaff(@PathVariable Long teamId){
+        return ResponseEntity.ok(teamService.getCoachingStaff(teamId));
+    }
+
 
 }

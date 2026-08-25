@@ -1,7 +1,9 @@
 package com.nba.coach;
 
+import com.nba.core.exception.invalidData.InvalidPlayerDataException;
 import com.nba.core.exception.notFound.CoachNotFoundException;
 import com.nba.core.exception.invalidData.InvalidCoachDataException;
+import com.nba.player.Player;
 import com.nba.team.Team;
 import com.nba.team.TeamRepository;
 import lombok.AllArgsConstructor;
@@ -75,6 +77,17 @@ import java.util.List;
         return coachRepository.findAll(CoachSpecification.buildQuery(filter)).stream()
                 .map(coachMapper::toCoachDto)
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ResponseColleagues getColleaguesByCoachId(Long coachId){
+        Coach coach = findCoachById(coachId);
+        if(coach.getTeam() == null){
+            throw  new InvalidPlayerDataException("Coach with id "+coachId+ " doesn't work in any team and has no colleagues");
+        }
+        Long teamId = coach.getTeam().getId();
+        return coachMapper.toColleaguesDto(coachRepository.findAllByTeamId(teamId),coach);
     }
 
     private Coach findCoachById(Long coachId){

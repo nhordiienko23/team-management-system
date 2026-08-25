@@ -10,4 +10,5 @@ public interface CoachService {
     void deleteCoach(Long id);
     ResponseCoachDto getCoachById(Long id);
     List<ResponseCoachDto> searchCoaches(CoachSearchFilter filter);
+    ResponseColleagues getColleaguesByCoachId(Long coachId);
 }

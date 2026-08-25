@@ -1,5 +1,7 @@
 package com.nba.player;
 
+import com.nba.core.dto.response.MemberShortDto;
+import com.nba.core.model.TeamMember;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -52,10 +54,16 @@ import java.util.List;
                 .playerFullName(player.getFirstName()+" "+player.getLastName())
                 .teammates(players.stream()
                         .filter(p-> !p.getId().equals(player.getId()))
-                        .map(p -> p.getFirstName() + " " + p.getLastName())
+                        .map(this::toMemberShortDto)
                         .toList())
                 .build();
     }
-
+    @Override
+    public MemberShortDto toMemberShortDto(Player player) {
+        return MemberShortDto.builder()
+                .id(player.getId())
+                .fullName(player.getFirstName() + " " + player.getLastName())
+                .build();
+    }
 
 }

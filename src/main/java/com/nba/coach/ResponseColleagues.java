@@ -1,4 +1,4 @@
-package com.nba.player;
+package com.nba.coach;
 
 import com.nba.core.dto.response.MemberShortDto;
 import lombok.Builder;
@@ -6,8 +6,9 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-public record ResponseTeammates(
+public record ResponseColleagues(
         String teamName,
-        String playerFullName,
-        List<MemberShortDto> teammates) {
+        String coachFullName,
+        List<MemberShortDto> colleagues
+) {
 }

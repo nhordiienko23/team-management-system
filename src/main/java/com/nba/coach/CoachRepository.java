@@ -13,5 +13,8 @@ import java.util.List;
     @EntityGraph(attributePaths = "team")
     List<Coach> findAll();
 
+    @EntityGraph(attributePaths = "team")
+    List<Coach> findAllByTeamId(Long teamId);
+
 
 }

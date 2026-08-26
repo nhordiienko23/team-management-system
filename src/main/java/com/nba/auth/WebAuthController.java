@@ -1,4 +1,4 @@
-package com.nba.security;
+package com.nba.auth;
 
 import com.nba.core.exception.invalidData.UserInvalidDataException;
 import lombok.RequiredArgsConstructor;

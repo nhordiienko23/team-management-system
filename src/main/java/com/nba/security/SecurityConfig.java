@@ -1,4 +1,4 @@
-package com.nba.security.config;
+package com.nba.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

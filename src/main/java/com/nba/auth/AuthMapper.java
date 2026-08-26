@@ -1,4 +1,4 @@
-package com.nba.security;
+package com.nba.auth;
 
 import com.nba.user.User;
 

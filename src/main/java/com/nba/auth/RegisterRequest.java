@@ -1,4 +1,4 @@
-package com.nba.security;
+package com.nba.auth;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

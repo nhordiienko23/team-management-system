@@ -30,4 +30,11 @@ public class OpenApiConfig {
                 .pathsToMatch("/api/players/**")
                 .build();
     }
+    @Bean
+    public GroupedOpenApi userApi() {
+        return GroupedOpenApi.builder()
+                .group("user API")
+                .pathsToMatch("/api/users/**")
+                .build();
+    }
 }

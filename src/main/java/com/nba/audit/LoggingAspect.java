@@ -26,7 +26,7 @@ class LoggingAspect {
             "execution(* com.nba..*Service.delete*(..)) || " +
             "execution(* com.nba..*Service.remove*(..)) || " +
             "execution(* com.nba..*Service.fire*(..)) || " +
-            "execution(* com.nba.security.AuthService.register(..))")
+            "execution(* com.nba.auth.AuthService.register(..))")
     public void serviceModifyingMethods() {
     }
 

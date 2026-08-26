@@ -1,14 +1,19 @@
 package com.nba.team;
 
-import com.nba.core.dto.response.MemberShortDto;
-import com.nba.core.model.TeamMember;
+import com.nba.core.dto.response.TeamGroupResponse;
+import com.nba.core.mapper.MemberShortMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 
 @Component
+@RequiredArgsConstructor
 class TeamMapperImpl implements TeamMapper {
+
+    private final MemberShortMapper memberShortMapper;
+
     @Override
     public Team toTeamEntity(RequestTeamDto dto) {
         if (dto == null) {
@@ -34,45 +39,34 @@ class TeamMapperImpl implements TeamMapper {
                 .name(team.getName())
                 .creationDate(team.getCreationDate())
                 .coaches(team.getCoaches().stream()
-                        .map(this::toMemberShortDto)
+                        .map(memberShortMapper::toMemberShortDto)
                         .toList())
                 .players(team.getPlayers().stream()
-                        .map(this::toMemberShortDto)
+                        .map(memberShortMapper::toMemberShortDto)
                         .toList())
                 .championshipTitleCount(team.getChampionshipTitleCount())
                 .build();
     }
 
     @Override
-    public MemberShortDto toMemberShortDto(TeamMember teamMember) {
-        return MemberShortDto.builder()
-                .id(teamMember.getId())
-                .fullName(teamMember.getFirstName() + " " + teamMember.getLastName())
-                .build();
-    }
-
-    @Override
-    public ResponseGroupType toPlayerLineup(Team team) {
-        return ResponseGroupType.builder()
+    public TeamGroupResponse toPlayerLineup(Team team) {
+        return TeamGroupResponse.builder()
                 .teamName(team.getName())
-                .groupType(TeamGroupType.TEAM_LINEUP)
-                .members(team.getPlayers().stream().
-                        map(this::toMemberShortDto)
+                .title(TeamGroupType.TEAM_LINEUP.name())
+                .members(team.getPlayers().stream()
+                        .map(memberShortMapper::toMemberShortDto)
                         .toList())
                 .build();
     }
 
     @Override
-    public ResponseGroupType toCoachingStaff(Team team) {
-        return ResponseGroupType.builder()
+    public TeamGroupResponse toCoachingStaff(Team team) {
+        return TeamGroupResponse.builder()
                 .teamName(team.getName())
-                .groupType(TeamGroupType.COACHING_STAFF)
-                .members(team.getCoaches().stream().
-                        map(this::toMemberShortDto)
+                .title(TeamGroupType.COACHING_STAFF.name())
+                .members(team.getCoaches().stream()
+                        .map(memberShortMapper::toMemberShortDto)
                         .toList())
                 .build();
     }
-
-
 }
-

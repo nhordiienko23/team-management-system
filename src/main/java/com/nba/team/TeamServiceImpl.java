@@ -1,5 +1,6 @@
 package com.nba.team;
 
+import com.nba.core.dto.response.TeamGroupResponse;
 import com.nba.core.exception.invalidData.InvalidTeamDataException;
 import com.nba.core.exception.notFound.TeamNotFoundException;
 import com.nba.coach.Coach;
@@ -104,10 +105,11 @@ class TeamServiceImpl implements TeamService {
     @Transactional
     public void deletePlayerFromTeam(Long teamId, Long playerId) {
         Team team = findTeamById(teamId);
-        Player playerToRemove = (Player) team.getTeamMembers().stream()
-                .filter(tm -> tm.getId().equals(playerId) && tm instanceof Player)
+        Player playerToRemove = (Player) team.getPlayers().stream()
+                .filter(tm -> tm.getId().equals(playerId))
                 .findFirst()
-                .orElseThrow(() -> new InvalidTeamDataException("Player with id " + playerId + " doesn't exist in team with id " + teamId));
+                .orElseThrow(() ->
+                        new InvalidTeamDataException("Player with id " + playerId + " doesn't exist in team with id " + teamId));
         team.getTeamMembers().remove(playerToRemove);
         playerToRemove.setTeam(null);
     }
@@ -116,10 +118,11 @@ class TeamServiceImpl implements TeamService {
     @Transactional
     public void deleteCoachFromTeam(Long teamId, Long coachId) {
         Team team = findTeamById(teamId);
-        Coach coachToRemove = (Coach) team.getTeamMembers().stream()
-                .filter(tm -> tm.getId().equals(coachId) && tm instanceof Coach)
+        Coach coachToRemove = (Coach) team.getCoaches().stream()
+                .filter(tm -> tm.getId().equals(coachId))
                 .findFirst()
-                .orElseThrow(() -> new InvalidTeamDataException("Coach with id " + coachId + " doesn't exist in team with id " + teamId));
+                .orElseThrow(() ->
+                        new InvalidTeamDataException("Coach with id " + coachId + " doesn't exist in team with id " + teamId));
         team.getTeamMembers().remove(coachToRemove);
         coachToRemove.setTeam(null);
     }
@@ -135,13 +138,13 @@ class TeamServiceImpl implements TeamService {
 
     @Override
     @Transactional(readOnly = true)
-    public ResponseGroupType getTeamLineup(Long teamId) {
+    public TeamGroupResponse getTeamLineup(Long teamId) {
         return teamMapper.toPlayerLineup(findTeamById(teamId));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ResponseGroupType getCoachingStaff(Long teamId) {
+    public TeamGroupResponse getCoachingStaff(Long teamId) {
         return teamMapper.toCoachingStaff(findTeamById(teamId));
     }
 

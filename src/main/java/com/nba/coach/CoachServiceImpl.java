@@ -1,9 +1,9 @@
 package com.nba.coach;
 
+import com.nba.core.dto.response.TeamGroupResponse;
 import com.nba.core.exception.invalidData.InvalidPlayerDataException;
 import com.nba.core.exception.notFound.CoachNotFoundException;
 import com.nba.core.exception.invalidData.InvalidCoachDataException;
-import com.nba.player.Player;
 import com.nba.team.Team;
 import com.nba.team.TeamRepository;
 import lombok.AllArgsConstructor;
@@ -12,10 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-
 @Service
 @AllArgsConstructor
- class CoachServiceImpl implements CoachService {
+class CoachServiceImpl implements CoachService {
     private final CoachMapper coachMapper;
     private final CoachRepository coachRepository;
     private final TeamRepository teamRepository;
@@ -81,22 +80,21 @@ import java.util.List;
 
     @Override
     @Transactional(readOnly = true)
-    public ResponseColleagues getColleaguesByCoachId(Long coachId){
+    public TeamGroupResponse getColleaguesByCoachId(Long coachId){
         Coach coach = findCoachById(coachId);
         if(coach.getTeam() == null){
-            throw  new InvalidPlayerDataException("Coach with id "+coachId+ " doesn't work in any team and has no colleagues");
+            throw new InvalidPlayerDataException("Coach with id "+coachId+ " doesn't work in any team and has no colleagues");
         }
         Long teamId = coach.getTeam().getId();
-        return coachMapper.toColleaguesDto(coachRepository.findAllByTeamId(teamId),coach);
+        return coachMapper.toColleaguesDto(coachRepository.findAllByTeamId(teamId), coach);
     }
 
     private Coach findCoachById(Long coachId){
         return coachRepository.findById(coachId).orElseThrow(() ->
                 new CoachNotFoundException(coachId));
     }
-    private  Team findTeamById(Long teamId){
+    private Team findTeamById(Long teamId){
         return teamRepository.findById(teamId).orElseThrow(() ->
                 new InvalidCoachDataException("team with id " + teamId + " not found"));
     }
-
 }

@@ -1,8 +1,7 @@
 package com.nba.player;
 
-
 import com.nba.core.dto.response.MessageResponse;
-
+import com.nba.core.dto.response.TeamGroupResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -68,9 +67,7 @@ public class PlayerController {
 
     @Operation(summary = "returns list of teammates")
     @GetMapping("/{playerId}/teammates")
-    public ResponseEntity<ResponseTeammates> getTeammates(@PathVariable Long playerId){
-        return  ResponseEntity.ok(playerService.getTeammatesByPlayerId(playerId));
+    public ResponseEntity<TeamGroupResponse> getTeammates(@PathVariable Long playerId){
+        return ResponseEntity.ok(playerService.getTeammatesByPlayerId(playerId));
     }
-
-
 }

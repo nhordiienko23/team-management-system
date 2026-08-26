@@ -1,6 +1,7 @@
 package com.nba.team;
 
 import com.nba.core.dto.response.MessageResponse;
+import com.nba.core.dto.response.TeamGroupResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -84,7 +85,7 @@ public class TeamController {
         teamService.deleteCoachFromTeam(teamId, coachId);
         return ResponseEntity.ok(MessageResponse.builder()
                 .message("Coach with id " + coachId + " was removed " +
-                        "from  team with id " + teamId + " successfully")
+                        "from team with id " + teamId + " successfully")
                 .build());
     }
 
@@ -109,13 +110,12 @@ public class TeamController {
     }
 
     @GetMapping("/{teamId}/team-lineup")
-    public ResponseEntity<ResponseGroupType> getTeamLineup(@PathVariable Long teamId){
+    public ResponseEntity<TeamGroupResponse> getTeamLineup(@PathVariable Long teamId){
         return ResponseEntity.ok(teamService.getTeamLineup(teamId));
     }
+
     @GetMapping("/{teamId}/coaching-staff")
-    public ResponseEntity<ResponseGroupType> getCoachingStaff(@PathVariable Long teamId){
+    public ResponseEntity<TeamGroupResponse> getCoachingStaff(@PathVariable Long teamId){
         return ResponseEntity.ok(teamService.getCoachingStaff(teamId));
     }
-
-
 }

@@ -1,8 +1,8 @@
 package com.nba.player;
 
+import com.nba.core.dto.response.TeamGroupResponse;
 import com.nba.core.exception.invalidData.InvalidPlayerDataException;
 import com.nba.core.exception.notFound.PlayerNotFoundException;
-
 import com.nba.team.Team;
 import com.nba.team.TeamRepository;
 import lombok.AllArgsConstructor;
@@ -13,7 +13,7 @@ import java.util.List;
 
 @Service
 @AllArgsConstructor
- class PlayerServiceImpl implements PlayerService {
+class PlayerServiceImpl implements PlayerService {
     private final PlayerMapper playerMapper;
     private final PlayerRepository playerRepository;
     private final TeamRepository teamRepository;
@@ -28,7 +28,6 @@ import java.util.List;
         Player savedPlayer = playerRepository.save(player);
         return playerMapper.toPlayerDto(savedPlayer);
     }
-
 
     @Override
     @Transactional(readOnly = true)
@@ -72,21 +71,21 @@ import java.util.List;
 
     @Override
     @Transactional(readOnly = true)
-    public List<ResponsePlayerDto> searchPlayers(PlayerSearchFilter filter) { // Принимаем список
+    public List<ResponsePlayerDto> searchPlayers(PlayerSearchFilter filter) {
         return playerRepository.findAll(PlayerSpecification.buildQuery(filter)).stream()
                 .map(playerMapper::toPlayerDto)
                 .toList();
-
     }
+
     @Override
     @Transactional(readOnly = true)
-    public ResponseTeammates getTeammatesByPlayerId(Long playerId){
+    public TeamGroupResponse getTeammatesByPlayerId(Long playerId){
         Player player = findPlayerById(playerId);
         if(player.getTeam() == null){
-            throw  new InvalidPlayerDataException("Player with id "+playerId+ " is a free agent and has no teammates");
+            throw new InvalidPlayerDataException("Player with id "+playerId+ " is a free agent and has no teammates");
         }
         Long teamId = player.getTeam().getId();
-        return playerMapper.toResponseTeammates(playerRepository.findAllByTeamId(teamId),player);
+        return playerMapper.toResponseTeammates(playerRepository.findAllByTeamId(teamId), player);
     }
 
     private Player findPlayerById(Long playerId) {

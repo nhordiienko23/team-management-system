@@ -1,13 +1,19 @@
 package com.nba.coach;
 
-import com.nba.core.dto.response.MemberShortDto;
+import com.nba.core.dto.response.TeamGroupResponse;
+import com.nba.core.mapper.MemberShortMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 class CoachMapperImpl implements CoachMapper {
+
+    private final MemberShortMapper memberShortMapper;
+
     @Override
     public Coach toCoachEntity(RequestCoachDto dto) {
         if (dto == null) return null;
@@ -41,29 +47,19 @@ class CoachMapperImpl implements CoachMapper {
     }
 
     @Override
-    public MemberShortDto toMemberShortDto(Coach coach) {
-        return MemberShortDto.builder()
-                .id(coach.getId())
-                .fullName(coach.getFirstName() + " " + coach.getLastName())
+    public TeamGroupResponse toColleaguesDto(List<Coach> coaches, Coach coach) {
+        if (coaches == null || coaches.isEmpty()) return TeamGroupResponse.builder()
+                .members(Collections.emptyList())
                 .build();
-    }
 
-    @Override
-    public ResponseColleagues toColleaguesDto(List<Coach> coaches, Coach coach) {
-        if (coaches == null || coaches.isEmpty()) return ResponseColleagues.
-                builder()
-                .colleagues(Collections.emptyList())
-                .build();
         String teamName = coaches.get(0).getTeam().getName();
-        return ResponseColleagues.builder()
+        return TeamGroupResponse.builder()
                 .teamName(teamName)
-                .coachFullName(coach.getFirstName() + " " + coach.getLastName())
-                .colleagues(coaches.stream()
+                .title("COLLEAGUES OF " + coach.getFirstName() + " " + coach.getLastName())
+                .members(coaches.stream()
                         .filter(p -> !p.getId().equals(coach.getId()))
-                        .map(this::toMemberShortDto)
+                        .map(memberShortMapper::toMemberShortDto)
                         .toList())
                 .build();
     }
-
-
 }

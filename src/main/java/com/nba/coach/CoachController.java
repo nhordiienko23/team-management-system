@@ -1,7 +1,7 @@
 package com.nba.coach;
 
 import com.nba.core.dto.response.MessageResponse;
-import com.nba.player.ResponseTeammates;
+import com.nba.core.dto.response.TeamGroupResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -60,11 +60,10 @@ public class CoachController {
                 .message("Coach with id " + id + " was deleted successfully")
                 .build());
     }
+
     @Operation(summary = "returns list of colleagues")
     @GetMapping("/{coachId}/colleagues")
-    public ResponseEntity<ResponseColleagues> getTeammates(@PathVariable Long coachId){
-        return  ResponseEntity.ok(coachService.getColleaguesByCoachId(coachId));
+    public ResponseEntity<TeamGroupResponse> getTeammates(@PathVariable Long coachId){
+        return ResponseEntity.ok(coachService.getColleaguesByCoachId(coachId));
     }
-
-
 }

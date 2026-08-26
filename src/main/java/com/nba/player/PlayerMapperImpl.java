@@ -1,14 +1,19 @@
 package com.nba.player;
 
-import com.nba.core.dto.response.MemberShortDto;
-import com.nba.core.model.TeamMember;
+import com.nba.core.dto.response.TeamGroupResponse;
+import com.nba.core.mapper.MemberShortMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
 
 @Component
- class PlayerMapperImpl implements PlayerMapper {
+@RequiredArgsConstructor
+class PlayerMapperImpl implements PlayerMapper {
+
+    private final MemberShortMapper memberShortMapper;
+
     @Override
     public Player toPlayerEntity(RequestPlayerDto dto) {
         if (dto == null) return null;
@@ -43,27 +48,19 @@ import java.util.List;
     }
 
     @Override
-    public ResponseTeammates toResponseTeammates(List<Player> players,Player player) {
-        if (players == null || players.isEmpty()) return ResponseTeammates.
-                builder()
-                .teammates(Collections.emptyList())
+    public TeamGroupResponse toResponseTeammates(List<Player> players, Player player) {
+        if (players == null || players.isEmpty()) return TeamGroupResponse.builder()
+                .members(Collections.emptyList())
                 .build();
+
         String teamName = players.get(0).getTeam().getName();
-        return ResponseTeammates.builder()
+        return TeamGroupResponse.builder()
                 .teamName(teamName)
-                .playerFullName(player.getFirstName()+" "+player.getLastName())
-                .teammates(players.stream()
-                        .filter(p-> !p.getId().equals(player.getId()))
-                        .map(this::toMemberShortDto)
+                .title("TEAMMATES OF " + player.getFirstName() + " " + player.getLastName())
+                .members(players.stream()
+                        .filter(p -> !p.getId().equals(player.getId()))
+                        .map(memberShortMapper::toMemberShortDto)
                         .toList())
                 .build();
     }
-    @Override
-    public MemberShortDto toMemberShortDto(Player player) {
-        return MemberShortDto.builder()
-                .id(player.getId())
-                .fullName(player.getFirstName() + " " + player.getLastName())
-                .build();
-    }
-
 }

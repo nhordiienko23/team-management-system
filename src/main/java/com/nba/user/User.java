@@ -1,7 +1,12 @@
-package com.nba.core.model;
+package com.nba.user;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -18,10 +23,17 @@ public class User {
     private String username;
     @Column(nullable = false)
     private String password;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role;
+    private Set<UserRole> roles;
+
     @Column(unique = true, nullable = false)
     private String email;
+
+    private LocalDateTime registerAt;
+    private LocalDateTime lastLogin;
 
 }

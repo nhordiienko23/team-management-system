@@ -15,7 +15,7 @@ import java.util.Arrays;
 @Aspect
 @Component
 @RequiredArgsConstructor
- class LoggingAspect {
+class LoggingAspect {
 
 
     private final AuditLogService auditLogService;
@@ -25,7 +25,8 @@ import java.util.Arrays;
             "execution(* com.nba..*Service.update*(..)) || " +
             "execution(* com.nba..*Service.delete*(..)) || " +
             "execution(* com.nba..*Service.remove*(..)) || " +
-            "execution(* com.nba..*Service.fire*(..))")
+            "execution(* com.nba..*Service.fire*(..)) || " +
+            "execution(* com.nba.security.AuthService.register(..))")
     public void serviceModifyingMethods() {
     }
 

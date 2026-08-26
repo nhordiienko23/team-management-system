@@ -39,8 +39,8 @@ class PlayerServiceImpl implements PlayerService {
 
     @Override
     @Transactional
-    public ResponsePlayerDto updatePlayer(Long id, RequestPlayerDto dto) {
-        Player player = findPlayerById(id);
+    public ResponsePlayerDto updatePlayer(Long playerId, RequestPlayerDto dto) {
+        Player player = playerRepository.getPlayerByIdOrThrow(playerId);
 
         player.setFirstName(dto.firstName());
         player.setLastName(dto.lastName());
@@ -58,15 +58,15 @@ class PlayerServiceImpl implements PlayerService {
 
     @Override
     @Transactional
-    public void deletePlayer(Long id) {
-        if (!playerRepository.existsById(id)) throw new PlayerNotFoundException(id);
-        playerRepository.deleteById(id);
+    public void deletePlayer(Long playerId) {
+        if (!playerRepository.existsById(playerId)) throw new PlayerNotFoundException(playerId);
+        playerRepository.deleteById(playerId);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ResponsePlayerDto getPlayerById(Long id) {
-        return playerMapper.toPlayerDto(findPlayerById(id));
+    public ResponsePlayerDto getPlayerById(Long playerId) {
+        return playerMapper.toPlayerDto(playerRepository.getPlayerByIdOrThrow(playerId));
     }
 
     @Override
@@ -80,7 +80,7 @@ class PlayerServiceImpl implements PlayerService {
     @Override
     @Transactional(readOnly = true)
     public TeamGroupResponse getTeammatesByPlayerId(Long playerId){
-        Player player = findPlayerById(playerId);
+        Player player = playerRepository.getPlayerByIdOrThrow(playerId);
         if(player.getTeam() == null){
             throw new InvalidPlayerDataException("Player with id "+playerId+ " is a free agent and has no teammates");
         }
@@ -88,10 +88,7 @@ class PlayerServiceImpl implements PlayerService {
         return playerMapper.toResponseTeammates(playerRepository.findAllByTeamId(teamId), player);
     }
 
-    private Player findPlayerById(Long playerId) {
-        return playerRepository.findById(playerId).orElseThrow(() ->
-                new PlayerNotFoundException(playerId));
-    }
+
 
     private Team findTeamById(Long teamId) {
         return teamRepository.findById(teamId).orElseThrow(() ->

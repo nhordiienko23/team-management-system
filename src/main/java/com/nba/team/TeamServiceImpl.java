@@ -45,8 +45,8 @@ class TeamServiceImpl implements TeamService {
 
     @Override
     @Transactional
-    public ResponseTeamDto updateTeam(Long id, RequestTeamDto dto) {
-        Team team = findTeamById(id);
+    public ResponseTeamDto updateTeam(Long teamId, RequestTeamDto dto) {
+        Team team = teamRepository.getTeamByIdOrThrow(teamId);
         if (!team.getName().equals(dto.name()) && teamRepository.existsByName(dto.name())) {
             throw new InvalidTeamDataException("Team with name " + dto.name() + " already exists");
         }
@@ -58,16 +58,16 @@ class TeamServiceImpl implements TeamService {
 
     @Override
     @Transactional
-    public void deleteTeam(Long id) {
-        if (!teamRepository.existsById(id)) throw new TeamNotFoundException(id);
-        teamRepository.deleteById(id);
+    public void deleteTeam(Long teamId) {
+        if (!teamRepository.existsById(teamId)) throw new TeamNotFoundException(teamId);
+        teamRepository.deleteById(teamId);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ResponseTeamDto getTeamById(Long id) {
-        Team team = teamRepository.findById(id).orElseThrow(() ->
-                new TeamNotFoundException(id));
+    public ResponseTeamDto getTeamById(Long teamId) {
+        Team team = teamRepository.findById(teamId).orElseThrow(() ->
+                new TeamNotFoundException(teamId));
         return teamMapper.toTeamDto(team);
     }
 
@@ -83,7 +83,7 @@ class TeamServiceImpl implements TeamService {
     @Transactional
     public void addPlayerToTeam(Long teamId, Long playerId) {
         Player player = findPlayerById(playerId);
-        Team team = findTeamById(teamId);
+        Team team = teamRepository.getTeamByIdOrThrow(teamId);
         if (team.getTeamMembers().contains(player))
             throw new InvalidTeamDataException("Player with id " + playerId + " already exists in team with id " + teamId);
         team.getTeamMembers().add(player);
@@ -94,7 +94,7 @@ class TeamServiceImpl implements TeamService {
     @Transactional
     public void addCoachToTeam(Long teamId, Long coachId) {
         Coach coach = findCoachById(coachId);
-        Team team = findTeamById(teamId);
+        Team team = teamRepository.getTeamByIdOrThrow(teamId);
         if (team.getTeamMembers().contains(coach))
             throw new InvalidTeamDataException("Coach with id " + coachId + " already exists in team with id " + teamId);
         team.getTeamMembers().add(coach);
@@ -104,7 +104,7 @@ class TeamServiceImpl implements TeamService {
     @Override
     @Transactional
     public void deletePlayerFromTeam(Long teamId, Long playerId) {
-        Team team = findTeamById(teamId);
+        Team team = teamRepository.getTeamByIdOrThrow(teamId);
         Player playerToRemove = (Player) team.getPlayers().stream()
                 .filter(tm -> tm.getId().equals(playerId))
                 .findFirst()
@@ -117,7 +117,7 @@ class TeamServiceImpl implements TeamService {
     @Override
     @Transactional
     public void deleteCoachFromTeam(Long teamId, Long coachId) {
-        Team team = findTeamById(teamId);
+        Team team = teamRepository.getTeamByIdOrThrow(teamId);
         Coach coachToRemove = (Coach) team.getCoaches().stream()
                 .filter(tm -> tm.getId().equals(coachId))
                 .findFirst()
@@ -131,7 +131,7 @@ class TeamServiceImpl implements TeamService {
     @Override
     @Transactional
     public void fireAllTeamMembers(Long teamId) {
-        Team team = findTeamById(teamId);
+        Team team = teamRepository.getTeamByIdOrThrow(teamId);
         team.getTeamMembers().forEach(teamMember -> teamMember.setTeam(null));
         team.getTeamMembers().clear();
     }
@@ -139,13 +139,13 @@ class TeamServiceImpl implements TeamService {
     @Override
     @Transactional(readOnly = true)
     public TeamGroupResponse getTeamLineup(Long teamId) {
-        return teamMapper.toPlayerLineup(findTeamById(teamId));
+        return teamMapper.toPlayerLineup(teamRepository.getTeamByIdOrThrow(teamId));
     }
 
     @Override
     @Transactional(readOnly = true)
     public TeamGroupResponse getCoachingStaff(Long teamId) {
-        return teamMapper.toCoachingStaff(findTeamById(teamId));
+        return teamMapper.toCoachingStaff(teamRepository.getTeamByIdOrThrow(teamId));
     }
 
 
@@ -159,8 +159,5 @@ class TeamServiceImpl implements TeamService {
                 new InvalidTeamDataException("Coach with id " + coachId + " not found"));
     }
 
-    private Team findTeamById(Long teamId) {
-        return teamRepository.findById(teamId).orElseThrow(() ->
-                new InvalidTeamDataException("Team with id " + teamId + " not found"));
-    }
+
 }

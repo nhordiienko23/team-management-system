@@ -6,9 +6,9 @@ import java.util.List;
 public interface PlayerService {
     ResponsePlayerDto addPlayer(RequestPlayerDto dto);
     List<ResponsePlayerDto> getAllPlayers();
-    ResponsePlayerDto updatePlayer(Long id, RequestPlayerDto dto);
-    void deletePlayer(Long id);
-    ResponsePlayerDto getPlayerById(Long id);
+    ResponsePlayerDto updatePlayer(Long playerId, RequestPlayerDto dto);
+    void deletePlayer(Long playerId);
+    ResponsePlayerDto getPlayerById(Long playerId);
     List<ResponsePlayerDto> searchPlayers(PlayerSearchFilter filter);
     TeamGroupResponse getTeammatesByPlayerId(Long playerId);
 }

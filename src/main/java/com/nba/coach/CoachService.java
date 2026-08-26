@@ -6,9 +6,9 @@ import java.util.List;
 public interface CoachService {
     ResponseCoachDto addCoach(RequestCoachDto dto);
     List<ResponseCoachDto> getAllCoaches();
-    ResponseCoachDto updateCoach(Long id, RequestCoachDto dto);
-    void deleteCoach(Long id);
-    ResponseCoachDto getCoachById(Long id);
+    ResponseCoachDto updateCoach(Long coachId, RequestCoachDto dto);
+    void deleteCoach(Long coachId);
+    ResponseCoachDto getCoachById(Long coachId);
     List<ResponseCoachDto> searchCoaches(CoachSearchFilter filter);
     TeamGroupResponse getColleaguesByCoachId(Long coachId);
 }

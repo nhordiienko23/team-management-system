@@ -32,8 +32,8 @@ class CoachServiceImpl implements CoachService {
 
     @Override
     @Transactional
-    public ResponseCoachDto updateCoach(Long id, RequestCoachDto dto) {
-        Coach coach = findCoachById(id);
+    public ResponseCoachDto updateCoach(Long coachId, RequestCoachDto dto) {
+        Coach coach = coachRepository.getCoachByIdOrThrow(coachId);
 
         coach.setFirstName(dto.firstName());
         coach.setLastName(dto.lastName());
@@ -42,7 +42,7 @@ class CoachServiceImpl implements CoachService {
         coach.setChampionshipsWon(dto.championshipsWon());
         if (dto.teamId() != null) {
             coach.setTeam(findTeamById(dto.teamId()));
-        }else{
+        } else {
             coach.setTeam(null);
         }
 
@@ -51,9 +51,9 @@ class CoachServiceImpl implements CoachService {
 
     @Override
     @Transactional
-    public void deleteCoach(Long id) {
-        if (!coachRepository.existsById(id)) throw new CoachNotFoundException(id);
-        coachRepository.deleteById(id);
+    public void deleteCoach(Long coachId) {
+        if (!coachRepository.existsById(coachId)) throw new CoachNotFoundException(coachId);
+        coachRepository.deleteById(coachId);
     }
 
     @Override
@@ -66,8 +66,8 @@ class CoachServiceImpl implements CoachService {
 
     @Override
     @Transactional(readOnly = true)
-    public ResponseCoachDto getCoachById(Long id) {
-        return coachMapper.toCoachDto(findCoachById(id));
+    public ResponseCoachDto getCoachById(Long coachId) {
+        return coachMapper.toCoachDto(coachRepository.getCoachByIdOrThrow(coachId));
     }
 
     @Override
@@ -80,20 +80,17 @@ class CoachServiceImpl implements CoachService {
 
     @Override
     @Transactional(readOnly = true)
-    public TeamGroupResponse getColleaguesByCoachId(Long coachId){
-        Coach coach = findCoachById(coachId);
-        if(coach.getTeam() == null){
-            throw new InvalidPlayerDataException("Coach with id "+coachId+ " doesn't work in any team and has no colleagues");
+    public TeamGroupResponse getColleaguesByCoachId(Long coachId) {
+        Coach coach = coachRepository.getCoachByIdOrThrow(coachId);
+        if (coach.getTeam() == null) {
+            throw new InvalidPlayerDataException("Coach with id " + coachId + " doesn't work in any team and has no colleagues");
         }
         Long teamId = coach.getTeam().getId();
         return coachMapper.toColleaguesDto(coachRepository.findAllByTeamId(teamId), coach);
     }
 
-    private Coach findCoachById(Long coachId){
-        return coachRepository.findById(coachId).orElseThrow(() ->
-                new CoachNotFoundException(coachId));
-    }
-    private Team findTeamById(Long teamId){
+
+    private Team findTeamById(Long teamId) {
         return teamRepository.findById(teamId).orElseThrow(() ->
                 new InvalidCoachDataException("team with id " + teamId + " not found"));
     }

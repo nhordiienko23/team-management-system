@@ -1,5 +1,6 @@
 package com.nba.player;
 
+import com.nba.core.exception.notFound.PlayerNotFoundException;
 import org.springframework.data.jpa.repository.*;
 
 import org.springframework.stereotype.Repository;
@@ -14,4 +15,8 @@ public interface PlayerRepository extends JpaRepository<Player, Long>, JpaSpecif
 
     @EntityGraph(attributePaths = {"team","playerPositions"})
     List<Player> findAllByTeamId(Long teamId);
+
+    default Player getPlayerByIdOrThrow(Long playerId){
+        return findById(playerId).orElseThrow(()->new PlayerNotFoundException(playerId));
+    }
 }

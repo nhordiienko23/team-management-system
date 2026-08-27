@@ -39,20 +39,33 @@ class PlayerServiceImpl implements PlayerService {
 
     @Override
     @Transactional
-    public ResponsePlayerDto updatePlayer(Long playerId, RequestPlayerDto dto) {
+    public ResponsePlayerDto partialUpdatePlayer(Long playerId, PatchPlayerRequest request) {
         Player player = playerRepository.getPlayerByIdOrThrow(playerId);
 
-        player.setFirstName(dto.firstName());
-        player.setLastName(dto.lastName());
-        player.setSalary(dto.salary());
-        if (dto.teamId() != null) {
-            player.setTeam(findTeamById(dto.teamId()));
-        } else {
-            player.setTeam(null);
+        if (request.firstName() != null) {
+            player.setFirstName(request.firstName());
         }
-        player.setPlayerPositions(dto.playerPositions());
-        player.setRating(dto.rating());
-        player.setChampionshipsWon(dto.championshipsWon());
+
+        if (request.lastName() != null) {
+            player.setLastName(request.lastName());
+        }
+
+        if (request.salary() != null) {
+            player.setSalary(request.salary());
+        }
+        if (request.teamId() != null) {
+            player.setTeam(findTeamById(request.teamId()));
+        }
+        if (request.playerPositions() != null) {
+            player.setPlayerPositions(request.playerPositions());
+        }
+
+        if (request.rating() != null) {
+            player.setRating(request.rating());
+        }
+        if (request.championshipsWon() != null) {
+            player.setChampionshipsWon(request.championshipsWon());
+        }
         return playerMapper.toPlayerDto(player);
     }
 
@@ -79,15 +92,14 @@ class PlayerServiceImpl implements PlayerService {
 
     @Override
     @Transactional(readOnly = true)
-    public TeamGroupResponse getTeammatesByPlayerId(Long playerId){
+    public TeamGroupResponse getTeammatesByPlayerId(Long playerId) {
         Player player = playerRepository.getPlayerByIdOrThrow(playerId);
-        if(player.getTeam() == null){
-            throw new InvalidPlayerDataException("Player with id "+playerId+ " is a free agent and has no teammates");
+        if (player.getTeam() == null) {
+            throw new InvalidPlayerDataException("Player with id " + playerId + " is a free agent and has no teammates");
         }
         Long teamId = player.getTeam().getId();
         return playerMapper.toResponseTeammates(playerRepository.findAllByTeamId(teamId), player);
     }
-
 
 
     private Team findTeamById(Long teamId) {

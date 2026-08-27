@@ -6,7 +6,7 @@ import java.util.List;
 public interface PlayerService {
     ResponsePlayerDto addPlayer(RequestPlayerDto dto);
     List<ResponsePlayerDto> getAllPlayers();
-    ResponsePlayerDto updatePlayer(Long playerId, RequestPlayerDto dto);
+    ResponsePlayerDto partialUpdatePlayer(Long playerId, PatchPlayerRequest request);
     void deletePlayer(Long playerId);
     ResponsePlayerDto getPlayerById(Long playerId);
     List<ResponsePlayerDto> searchPlayers(PlayerSearchFilter filter);

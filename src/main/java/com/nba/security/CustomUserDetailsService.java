@@ -1,5 +1,6 @@
 package com.nba.security;
 
+import com.nba.core.exception.notFound.UserNotFoundException;
 import com.nba.user.User;
 import com.nba.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +17,12 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userService.getUserByUsername(username);
-        return new CustomUserDetails(user);
+        try {
+            User user = userService.getUserByUsername(username);
+            return new CustomUserDetails(user);
+        } catch (UserNotFoundException ex) {
+            throw new UsernameNotFoundException("User not found");
+        }
 
     }
 }

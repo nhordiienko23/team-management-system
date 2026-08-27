@@ -37,11 +37,11 @@ public class PlayerController {
     }
 
     @Operation(summary = "updates player by id")
-    @PutMapping("/{id}")
-    public ResponseEntity<ResponsePlayerDto> updatePlayer(
+    @PatchMapping("/{id}")
+    public ResponseEntity<ResponsePlayerDto> partialUpdatePlayer(
             @PathVariable Long id,
-            @Valid @RequestBody RequestPlayerDto dto) {
-        return ResponseEntity.ok(playerService.updatePlayer(id, dto));
+            @Valid @RequestBody PatchPlayerRequest request) {
+        return ResponseEntity.ok(playerService.partialUpdatePlayer(id, request));
     }
 
     @Operation(summary = "deletes player by id")

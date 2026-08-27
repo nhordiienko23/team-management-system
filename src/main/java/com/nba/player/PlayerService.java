@@ -11,4 +11,5 @@ public interface PlayerService {
     ResponsePlayerDto getPlayerById(Long playerId);
     List<ResponsePlayerDto> searchPlayers(PlayerSearchFilter filter);
     TeamGroupResponse getTeammatesByPlayerId(Long playerId);
+    void changePlayerTeam(Long playerId, Long newTeamId);
 }

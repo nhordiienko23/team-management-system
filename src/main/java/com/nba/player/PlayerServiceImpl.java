@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @AllArgsConstructor
@@ -99,6 +100,27 @@ class PlayerServiceImpl implements PlayerService {
         }
         Long teamId = player.getTeam().getId();
         return playerMapper.toResponseTeammates(playerRepository.findAllByTeamId(teamId), player);
+    }
+
+    @Override
+    @Transactional
+    public void changePlayerTeam(Long playerId, Long newTeamId) {
+        Player player = playerRepository.getPlayerByIdOrThrow(playerId);
+        Long currentTeamId = (player.getTeam() != null)
+                ? player.getTeam().getId()
+                : null;
+        if (Objects.equals(currentTeamId, newTeamId)) {
+            throw new InvalidPlayerDataException(
+                    (newTeamId == null)
+                            ? "Player is already a free agent"
+                            : "Player is already a team member of this team");
+        }
+
+        if (newTeamId == null) {
+            player.setTeam(null);
+        } else {
+            player.setTeam(findTeamById(newTeamId));
+        }
     }
 
 

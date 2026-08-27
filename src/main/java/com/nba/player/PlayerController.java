@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.method.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,7 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/players")
 @AllArgsConstructor
-@Tag(name = "player API")
+@Tag(name = "player API", description = "Endpoints for managing player information")
 public class PlayerController {
 
     private final PlayerService playerService;
@@ -67,7 +68,28 @@ public class PlayerController {
 
     @Operation(summary = "returns list of teammates")
     @GetMapping("/{playerId}/teammates")
-    public ResponseEntity<TeamGroupResponse> getTeammates(@PathVariable Long playerId){
+    public ResponseEntity<TeamGroupResponse> getTeammates(@PathVariable Long playerId) {
         return ResponseEntity.ok(playerService.getTeammatesByPlayerId(playerId));
     }
+
+    @Operation(summary = "trades player to another team or makes them a free agent if teamId is not provided")
+    @PatchMapping("/{playerId}/change-team")
+    public ResponseEntity<MessageResponse> changePlayerTeam(
+            @PathVariable Long playerId,
+            @RequestParam(required = false) Long teamId) {
+
+        playerService.changePlayerTeam(playerId, teamId);
+
+        String message;
+        if (teamId == null) {
+            message = "Player with id " + playerId + " became a free agent successfully";
+        } else {
+            message = "Player with id " + playerId + " was traded to team with id " + teamId + " successfully"; // <--- Добавили пробел перед was
+        }
+
+        return ResponseEntity.ok(MessageResponse.builder()
+                .message(message)
+                .build());
+    }
+
 }

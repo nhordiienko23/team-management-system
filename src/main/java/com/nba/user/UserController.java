@@ -48,7 +48,7 @@ public class UserController {
     public ResponseEntity<List<UserDto>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
-
+    @Operation(summary = "updates user current password")
     @PatchMapping("/me/update-password")
     public ResponseEntity<MessageResponse> updateMyCurrentPassword(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                                                    @Valid @RequestBody PasswordUpdateRequest request) {

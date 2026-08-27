@@ -2,6 +2,7 @@ package com.nba.team;
 
 import com.nba.core.dto.response.MessageResponse;
 import com.nba.core.dto.response.TeamGroupResponse;
+import com.nba.core.dto.response.TeamTransferResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -51,46 +52,34 @@ public class TeamController {
 
     @Operation(summary = "adds player to team by id")
     @PostMapping("/{teamId}/players/{playerId}")
-    public ResponseEntity<MessageResponse> addPlayer(@PathVariable Long teamId,
+    public ResponseEntity<TeamTransferResponse> addPlayer(@PathVariable Long teamId,
                                                      @PathVariable Long playerId) {
-        teamService.addPlayerToTeam(teamId, playerId);
-        return ResponseEntity.ok(MessageResponse.builder()
-                .message("Player with id " + playerId + " was added " +
-                        "to team with id " + teamId + " successfully")
-                .build());
+
+        return ResponseEntity.ok(teamService.addPlayerToTeam(teamId, playerId));
     }
 
     @Operation(summary = "adds coach to team by id")
     @PostMapping("/{teamId}/coaches/{coachId}")
-    public ResponseEntity<MessageResponse> addCoach(@PathVariable Long teamId,
-                                                    @PathVariable Long coachId) {
-        teamService.addCoachToTeam(teamId, coachId);
-        return ResponseEntity.ok(MessageResponse.builder()
-                .message("Coach with id " + coachId + " was added " +
-                        "to team with id " + teamId + " successfully")
-                .build());
+    public ResponseEntity<TeamTransferResponse> addCoach(@PathVariable Long teamId,
+                                                         @PathVariable Long coachId) {
+
+        return ResponseEntity.ok(teamService.addCoachToTeam(teamId, coachId));
     }
 
     @Operation(summary = "deletes player from team by id")
     @DeleteMapping("/{teamId}/players/{playerId}")
-    public ResponseEntity<MessageResponse> removePlayer(@PathVariable Long teamId,
+    public ResponseEntity<TeamTransferResponse> removePlayer(@PathVariable Long teamId,
                                                         @PathVariable Long playerId) {
-        teamService.deletePlayerFromTeam(teamId, playerId);
-        return ResponseEntity.ok(MessageResponse.builder()
-                .message("Player with id " + playerId + " was removed " +
-                        "from team with id " + teamId + " successfully")
-                .build());
+
+        return ResponseEntity.ok(teamService.deletePlayerFromTeam(teamId, playerId));
     }
 
     @Operation(summary = "deletes coach from team by id")
     @DeleteMapping("/{teamId}/coaches/{coachId}")
-    public ResponseEntity<MessageResponse> removeCoach(@PathVariable Long teamId,
+    public ResponseEntity<TeamTransferResponse> removeCoach(@PathVariable Long teamId,
                                                        @PathVariable Long coachId) {
-        teamService.deleteCoachFromTeam(teamId, coachId);
-        return ResponseEntity.ok(MessageResponse.builder()
-                .message("Coach with id " + coachId + " was removed " +
-                        "from team with id " + teamId + " successfully")
-                .build());
+
+        return ResponseEntity.ok(teamService.deleteCoachFromTeam(teamId, coachId));
     }
 
     @Operation(summary = "deletes all team members from team by team id")

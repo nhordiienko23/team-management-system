@@ -1,6 +1,8 @@
 package com.nba.player;
 
 import com.nba.core.dto.response.TeamGroupResponse;
+import com.nba.core.dto.response.TeamTransferResponse;
+
 import java.util.List;
 
 public interface PlayerService {
@@ -11,5 +13,5 @@ public interface PlayerService {
     ResponsePlayerDto getPlayerById(Long playerId);
     List<ResponsePlayerDto> searchPlayers(PlayerSearchFilter filter);
     TeamGroupResponse getTeammatesByPlayerId(Long playerId);
-    void changePlayerTeam(Long playerId, Long newTeamId);
+    TeamTransferResponse changePlayerTeam(Long playerId, Long newTeamId);
 }

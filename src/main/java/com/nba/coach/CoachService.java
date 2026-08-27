@@ -1,6 +1,8 @@
 package com.nba.coach;
 
 import com.nba.core.dto.response.TeamGroupResponse;
+import com.nba.core.dto.response.TeamTransferResponse;
+
 import java.util.List;
 
 public interface CoachService {
@@ -11,5 +13,5 @@ public interface CoachService {
     ResponseCoachDto getCoachById(Long coachId);
     List<ResponseCoachDto> searchCoaches(CoachSearchFilter filter);
     TeamGroupResponse getColleaguesByCoachId(Long coachId);
-    void changeCoachTeam(Long coachId, Long newTeamId);
+    TeamTransferResponse changeCoachTeam(Long coachId, Long newTeamId);
 }

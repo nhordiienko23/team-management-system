@@ -3,7 +3,9 @@ package com.nba.team;
 import com.nba.coach.Coach;
 import com.nba.coach.CoachRepository;
 import com.nba.core.dto.response.TeamGroupResponse;
+import com.nba.core.dto.response.TeamTransferResponse;
 import com.nba.core.exception.invalidData.InvalidTeamDataException;
+import com.nba.core.mapper.TeamTransferMapper;
 import com.nba.player.Player;
 import com.nba.player.PlayerRepository;
 import lombok.AllArgsConstructor;
@@ -22,6 +24,7 @@ class TeamServiceImpl implements TeamService {
     private final TeamMapper teamMapper;
     private final PlayerRepository playerRepository;
     private final CoachRepository coachRepository;
+    private final TeamTransferMapper teamTransferMapper;
 
     @Override
     @Transactional
@@ -97,10 +100,10 @@ class TeamServiceImpl implements TeamService {
 
     @Override
     @Transactional
-    public void addPlayerToTeam(Long teamId, Long playerId) {
+    public TeamTransferResponse addPlayerToTeam(Long teamId, Long playerId) {
         Player player = findPlayerByIdOrThrow400(playerId);
-        Team team = teamRepository.getTeamByIdOrThrow404(teamId);
-
+        Team newTeam = teamRepository.getTeamByIdOrThrow404(teamId);
+        Team oldTeam = player.getTeam();
         Long currentTeamId = player.getTeam() != null
                 ? player.getTeam().getId()
                 : null;
@@ -111,19 +114,25 @@ class TeamServiceImpl implements TeamService {
                             + " already exists in team with id " + teamId);
         }
 
-        if (player.getTeam() != null) {
-            player.getTeam().removeTeamMember(player);
+        if (oldTeam != null) {
+            oldTeam.removeTeamMember(player);
         }
 
-        team.addTeamMember(player);
+        newTeam.addTeamMember(player);
+        return teamTransferMapper.toTransferResponse(player,
+                oldTeam,
+                newTeam,
+                (oldTeam != null)
+                        ? "TRADE"
+                        : "ADD");
     }
 
     @Override
     @Transactional
-    public void addCoachToTeam(Long teamId, Long coachId) {
+    public TeamTransferResponse addCoachToTeam(Long teamId, Long coachId) {
         Coach coach = findCoachByIdOrThrow400(coachId);
-        Team team = teamRepository.getTeamByIdOrThrow404(teamId);
-
+        Team newTeam = teamRepository.getTeamByIdOrThrow404(teamId);
+        Team oldTeam = coach.getTeam();
         Long currentTeamId = coach.getTeam() != null
                 ? coach.getTeam().getId()
                 : null;
@@ -134,42 +143,51 @@ class TeamServiceImpl implements TeamService {
                             + " already exists in team with id " + teamId);
         }
 
-        if (coach.getTeam() != null) {
-            coach.getTeam().removeTeamMember(coach);
+        if (oldTeam != null) {
+            oldTeam.removeTeamMember(coach);
         }
-        team.addTeamMember(coach);
+        newTeam.addTeamMember(coach);
+        return teamTransferMapper.toTransferResponse(coach,
+                oldTeam,
+                newTeam,
+                (oldTeam != null)
+                        ? "TRADE"
+                        : "ADD");
     }
 
     @Override
     @Transactional
-    public void deletePlayerFromTeam(Long teamId, Long playerId) {
+    public TeamTransferResponse deletePlayerFromTeam(Long teamId, Long playerId) {
         Team team = teamRepository.getTeamByIdOrThrow404(teamId);
-        Player player = findPlayerByIdOrThrow400(playerId);
-
-        if (player.getTeam() == null
-                || !Objects.equals(player.getTeam().getId(), teamId)) {
-            throw new InvalidTeamDataException(
-                    "Player with id " + playerId
-                            + " doesn't exist in team with id " + teamId);
-        }
+        Player player = playerRepository
+                .findByIdAndTeamId(playerId, teamId)
+                .orElseThrow(() -> new InvalidTeamDataException(
+                        "Player with id " + playerId
+                                + " doesn't exist in team with id " + teamId));
 
         team.removeTeamMember(player);
+        return teamTransferMapper.toTransferResponse(
+                player,
+                team,
+                null,
+                "REMOVE"
+        );
     }
 
     @Override
     @Transactional
-    public void deleteCoachFromTeam(Long teamId, Long coachId) {
+    public TeamTransferResponse deleteCoachFromTeam(Long teamId, Long coachId) {
         Team team = teamRepository.getTeamByIdOrThrow404(teamId);
-        Coach coach = findCoachByIdOrThrow400(coachId);
-
-        if (coach.getTeam() == null
-                || !Objects.equals(coach.getTeam().getId(), teamId)) {
-            throw new InvalidTeamDataException(
-                    "Coach with id " + coachId
-                            + " doesn't exist in team with id " + teamId);
-        }
+        Coach coach = coachRepository.findByIdAndTeamId(coachId, teamId)
+                .orElseThrow(() -> new InvalidTeamDataException(
+                        "Coach with id " + coachId
+                                + " doesn't exist in team with id " + teamId));
 
         team.removeTeamMember(coach);
+        return teamTransferMapper.toTransferResponse(coach,
+                team,
+                null,
+                "REMOVE");
     }
 
     @Override

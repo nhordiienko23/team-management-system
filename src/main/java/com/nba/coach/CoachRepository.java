@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CoachRepository extends JpaRepository<Coach, Long>, JpaSpecificationExecutor<Coach> {
@@ -20,5 +21,6 @@ public interface CoachRepository extends JpaRepository<Coach, Long>, JpaSpecific
     default Coach getCoachByIdOrThrow404(Long coachId) {
         return findById(coachId).orElseThrow(() -> new CoachNotFoundException(coachId));
     }
+    Optional<Coach> findByIdAndTeamId(Long coachId, Long teamId);
 
 }

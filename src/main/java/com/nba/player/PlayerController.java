@@ -2,6 +2,7 @@ package com.nba.player;
 
 import com.nba.core.dto.response.MessageResponse;
 import com.nba.core.dto.response.TeamGroupResponse;
+import com.nba.core.dto.response.TeamTransferResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -73,19 +74,10 @@ public class PlayerController {
 
     @Operation(summary = "changes player team or makes him a free agent if teamId is not provided")
     @PatchMapping("/{playerId}/change-team")
-    public ResponseEntity<MessageResponse> changePlayerTeam(
+    public ResponseEntity<TeamTransferResponse> changePlayerTeam(
             @PathVariable Long playerId,
             @RequestParam(required = false) Long newTeamId) {
-
-        playerService.changePlayerTeam(playerId, newTeamId);
-
-
-        return ResponseEntity.ok(MessageResponse.builder()
-                .message(newTeamId == null
-                        ? "Player with id " + playerId + " became a free agent successfully"
-                        : "Player with id " + playerId +
-                          " joined team with id " + newTeamId + " successfully")
-                .build());
+        return ResponseEntity.ok(playerService.changePlayerTeam(playerId, newTeamId));
     }
 
 }

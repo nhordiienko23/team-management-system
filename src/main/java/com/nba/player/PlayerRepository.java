@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PlayerRepository extends JpaRepository<Player, Long>, JpaSpecificationExecutor<Player> {
@@ -21,5 +22,6 @@ public interface PlayerRepository extends JpaRepository<Player, Long>, JpaSpecif
         return findById(playerId).orElseThrow(() -> new PlayerNotFoundException(playerId));
     }
 
+    Optional<Player> findByIdAndTeamId(Long playerId, Long teamId);
 
 }

@@ -1,7 +1,9 @@
 package com.nba.coach;
 
 import com.nba.core.dto.response.TeamGroupResponse;
+import com.nba.core.dto.response.TeamTransferResponse;
 import com.nba.core.exception.invalidData.InvalidCoachDataException;
+import com.nba.core.mapper.TeamTransferMapper;
 import com.nba.team.Team;
 import com.nba.team.TeamRepository;
 import lombok.AllArgsConstructor;
@@ -17,6 +19,7 @@ class CoachServiceImpl implements CoachService {
     private final CoachMapper coachMapper;
     private final CoachRepository coachRepository;
     private final TeamRepository teamRepository;
+    private final TeamTransferMapper teamTransferMapper;
 
     @Override
     @Transactional
@@ -42,7 +45,7 @@ class CoachServiceImpl implements CoachService {
 
         if (request.teamId() != null) {
             Team newTeam = findTeamByIdOrThrow400(request.teamId());
-            if(coach.getTeam()!=null){
+            if (coach.getTeam() != null) {
                 coach.getTeam().removeTeamMember(coach);
             }
             newTeam.addTeamMember(coach);
@@ -55,8 +58,9 @@ class CoachServiceImpl implements CoachService {
     @Transactional
     public void deleteCoach(Long coachId) {
         Coach coach = coachRepository.getCoachByIdOrThrow404(coachId);
-        if (coach.getTeam() != null) {
-            coach.getTeam().removeTeamMember(coach);
+        Team oldTeam = coach.getTeam();
+        if (oldTeam != null) {
+            oldTeam.removeTeamMember(coach);
         }
         coachRepository.delete(coach);
     }
@@ -96,9 +100,9 @@ class CoachServiceImpl implements CoachService {
 
     @Override
     @Transactional
-    public void changeCoachTeam(Long coachId, Long newTeamId) {
+    public TeamTransferResponse changeCoachTeam(Long coachId, Long newTeamId) {
         Coach coach = coachRepository.getCoachByIdOrThrow404(coachId);
-
+        Team oldTeam = coach.getTeam();
         Long currentTeamId = coach.getTeam() != null
                 ? coach.getTeam().getId()
                 : null;
@@ -116,15 +120,22 @@ class CoachServiceImpl implements CoachService {
             newTeam = findTeamByIdOrThrow400(newTeamId);
         }
 
-        if (coach.getTeam() != null) {
-            coach.getTeam().removeTeamMember(coach);
+        if (oldTeam != null) {
+            oldTeam.removeTeamMember(coach);
         }
 
         if (newTeam != null) {
             newTeam.addTeamMember(coach);
         }
+        return teamTransferMapper.toTransferResponse(coach,
+                oldTeam,
+                newTeam,
+                (newTeam != null)
+                        ? "TRADE"
+                        : "REMOVE");
     }
-    private Team findTeamByIdOrThrow400(Long teamId){
+
+    private Team findTeamByIdOrThrow400(Long teamId) {
         return teamRepository.findById(teamId).orElseThrow(() ->
                 new InvalidCoachDataException("Team with id " + teamId + " not found"));
     }

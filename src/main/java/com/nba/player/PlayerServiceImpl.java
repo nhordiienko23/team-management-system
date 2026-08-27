@@ -1,7 +1,9 @@
 package com.nba.player;
 
 import com.nba.core.dto.response.TeamGroupResponse;
+import com.nba.core.dto.response.TeamTransferResponse;
 import com.nba.core.exception.invalidData.InvalidPlayerDataException;
+import com.nba.core.mapper.TeamTransferMapper;
 import com.nba.team.Team;
 import com.nba.team.TeamRepository;
 import lombok.AllArgsConstructor;
@@ -17,6 +19,7 @@ class PlayerServiceImpl implements PlayerService {
     private final PlayerMapper playerMapper;
     private final PlayerRepository playerRepository;
     private final TeamRepository teamRepository;
+    private final TeamTransferMapper teamTransferMapper;
 
     @Transactional
     @Override
@@ -98,8 +101,9 @@ class PlayerServiceImpl implements PlayerService {
 
     @Override
     @Transactional
-    public void changePlayerTeam(Long playerId, Long newTeamId) {
+    public TeamTransferResponse changePlayerTeam(Long playerId, Long newTeamId) {
         Player player = playerRepository.getPlayerByIdOrThrow404(playerId);
+        Team oldTeam = player.getTeam();
 
         Long currentTeamId = player.getTeam() != null
                 ? player.getTeam().getId()
@@ -118,13 +122,19 @@ class PlayerServiceImpl implements PlayerService {
             newTeam = findTeamByIdOrThrow400(newTeamId);
         }
 
-        if (player.getTeam() != null) {
-            player.getTeam().removeTeamMember(player);
+        if (oldTeam != null) {
+            oldTeam.removeTeamMember(player);
         }
 
         if (newTeam != null) {
             newTeam.addTeamMember(player);
         }
+        return teamTransferMapper.toTransferResponse(player,
+                oldTeam,
+                newTeam,
+                (newTeam != null)
+                        ? "TRADE"
+                        : "REMOVE");
     }
 
     private Team findTeamByIdOrThrow400(Long teamId) {

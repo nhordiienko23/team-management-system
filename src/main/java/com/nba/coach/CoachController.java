@@ -2,6 +2,7 @@ package com.nba.coach;
 
 import com.nba.core.dto.response.MessageResponse;
 import com.nba.core.dto.response.TeamGroupResponse;
+import com.nba.core.dto.response.TeamTransferResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -16,7 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/coaches")
 @AllArgsConstructor
-@Tag(name = "coach API",description = "Endpoints for managing coach information")
+@Tag(name = "coach API", description = "Endpoints for managing coach information")
 public class CoachController {
     private final CoachService coachService;
 
@@ -66,17 +67,13 @@ public class CoachController {
     public ResponseEntity<TeamGroupResponse> getColleagues(@PathVariable Long coachId) {
         return ResponseEntity.ok(coachService.getColleaguesByCoachId(coachId));
     }
+
     @Operation(summary = "changes coach team or makes him a free agent if teamId is not provided")
     @PatchMapping("/{coachId}/change-team")
-    public ResponseEntity<MessageResponse> changeCoachTeam(@PathVariable Long coachId,
-                                                           @RequestParam(required = false) Long newTeamId) {
-        coachService.changeCoachTeam(coachId, newTeamId);
-        return ResponseEntity.ok(MessageResponse.builder()
-                .message(newTeamId == null
-                        ? "Coach with id " + coachId + " became a free agent successfully"
-                        : "Coach with id " + coachId +
-                          " joined team with id " + newTeamId + " successfully")
-                .build());
+    public ResponseEntity<TeamTransferResponse> changeCoachTeam(@PathVariable Long coachId,
+                                                                @RequestParam(required = false) Long newTeamId) {
+
+        return ResponseEntity.ok(coachService.changeCoachTeam(coachId, newTeamId));
     }
 
 }

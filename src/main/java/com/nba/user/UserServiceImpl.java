@@ -98,6 +98,15 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<ResponseSearchUser> searchUsers(UserSearchFilter filter) {
+        return userRepository.findAll(UserSpecification.buildQuery(filter)).stream()
+                .map(userMapper::toResponseSearchUser)
+                .toList();
+    }
+
+
     private User getUserById(Long id) {
         return userRepository.findById(id).orElseThrow(() ->
                 new UserNotFoundException("User with teamName " + id + " not found"));

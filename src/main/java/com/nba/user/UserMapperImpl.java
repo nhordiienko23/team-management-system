@@ -6,8 +6,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 @AllArgsConstructor
-public class UserMapperImpl implements UserMapper{
-    private  final PasswordEncoder passwordEncoder;
+public class UserMapperImpl implements UserMapper {
+    private final PasswordEncoder passwordEncoder;
 
 
     @Override
@@ -16,6 +16,20 @@ public class UserMapperImpl implements UserMapper{
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
+                .build();
+    }
+
+    @Override
+    public ResponseSearchUser toResponseSearchUser(User user) {
+        return ResponseSearchUser.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .roles(user.getRoles().stream()
+                        .map(UserRole::name)
+                        .toList())
+                .registeredAt(user.getRegisterAt())
+                .lastLogin(user.getLastLogin())
                 .build();
     }
 }

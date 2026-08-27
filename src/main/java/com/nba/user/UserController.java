@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -48,6 +49,7 @@ public class UserController {
     public ResponseEntity<List<UserDto>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
+
     @Operation(summary = "updates user current password")
     @PatchMapping("/me/update-password")
     public ResponseEntity<MessageResponse> updateMyCurrentPassword(@AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -56,6 +58,11 @@ public class UserController {
         return ResponseEntity.ok(MessageResponse.builder()
                 .message("Your password was successfully updated")
                 .build());
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<ResponseSearchUser>> searchUsers(@ParameterObject UserSearchFilter filter) {
+        return ResponseEntity.ok(userService.searchUsers(filter));
     }
 
 

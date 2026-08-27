@@ -18,6 +18,6 @@ public interface UserService {
     List<UserDto> getAllUsers();
 
     void passwordUpdate(Long userId, PasswordUpdateRequest passwordUpdateRequest);
-
+    List<ResponseSearchUser> searchUsers(UserSearchFilter filter);
 
 }

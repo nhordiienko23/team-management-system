@@ -46,7 +46,7 @@ public class GlobalExceptionHandler {
 
         return buildResponse(HttpStatus.CONFLICT,
                 "Bad Request", "Data integrity violation: " +
-                        "possibly a duplicate unique value (e.g. name already exists) " +
+                        "possibly a duplicate unique value (e.g. teamName already exists) " +
                         "or invalid reference.");
     }
 

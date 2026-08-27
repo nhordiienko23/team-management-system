@@ -9,7 +9,6 @@ import lombok.AllArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.method.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,7 +36,7 @@ public class PlayerController {
         return ResponseEntity.ok(playerService.getAllPlayers());
     }
 
-    @Operation(summary = "updates player by id")
+    @Operation(summary = "partially updates player by id")
     @PatchMapping("/{id}")
     public ResponseEntity<ResponsePlayerDto> partialUpdatePlayer(
             @PathVariable Long id,
@@ -72,23 +71,20 @@ public class PlayerController {
         return ResponseEntity.ok(playerService.getTeammatesByPlayerId(playerId));
     }
 
-    @Operation(summary = "trades player to another team or makes them a free agent if teamId is not provided")
+    @Operation(summary = "changes player team or makes him a free agent if teamId is not provided")
     @PatchMapping("/{playerId}/change-team")
     public ResponseEntity<MessageResponse> changePlayerTeam(
             @PathVariable Long playerId,
-            @RequestParam(required = false) Long teamId) {
+            @RequestParam(required = false) Long newTeamId) {
 
-        playerService.changePlayerTeam(playerId, teamId);
+        playerService.changePlayerTeam(playerId, newTeamId);
 
-        String message;
-        if (teamId == null) {
-            message = "Player with id " + playerId + " became a free agent successfully";
-        } else {
-            message = "Player with id " + playerId + " was traded to team with id " + teamId + " successfully"; // <--- Добавили пробел перед was
-        }
 
         return ResponseEntity.ok(MessageResponse.builder()
-                .message(message)
+                .message(newTeamId == null
+                        ? "Player with id " + playerId + " became a free agent successfully"
+                        : "Player with id " + playerId +
+                          " joined team with id " + newTeamId + " successfully")
                 .build());
     }
 

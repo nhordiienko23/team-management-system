@@ -20,7 +20,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUserByUsername(String username) {
         return userRepository.findByUsername(username).orElseThrow(() ->
-                new UserNotFoundException("User with name " + username + " not found"));
+                new UserNotFoundException("User with teamName " + username + " not found"));
     }
 
     @Override
@@ -49,7 +49,7 @@ public class UserServiceImpl implements UserService {
         if (request.username() != null) {
             if (!user.getUsername().equals(request.username()) && userRepository.existsByUsername(request.username())) {
                 throw new InvalidUserDataException(
-                        "User with name " + request.username() + " already exists");
+                        "User with teamName " + request.username() + " already exists");
             }
             user.setUsername(request.username());
         }
@@ -100,7 +100,7 @@ public class UserServiceImpl implements UserService {
 
     private User getUserById(Long id) {
         return userRepository.findById(id).orElseThrow(() ->
-                new UserNotFoundException("User with name " + id + " not found"));
+                new UserNotFoundException("User with teamName " + id + " not found"));
     }
 
 

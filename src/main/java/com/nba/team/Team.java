@@ -22,7 +22,7 @@ public class Team {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(unique = true,nullable = false)
+    @Column(unique = true, nullable = false)
     private String name;
     @Column(nullable = false)
     private LocalDate creationDate;
@@ -30,20 +30,29 @@ public class Team {
     private Integer championshipTitleCount;
 
     @Builder.Default
-    @OneToMany(mappedBy = "team",cascade = {CascadeType.PERSIST,CascadeType.MERGE}, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "team", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     private List<TeamMember> teamMembers = new ArrayList<>();
 
-    public List<Player> getPlayers(){
+    public List<Player> getPlayers() {
         return teamMembers.stream()
                 .filter(Player.class::isInstance)
                 .map(Player.class::cast)
                 .toList();
     }
 
-    public List<Coach> getCoaches(){
+    public List<Coach> getCoaches() {
         return teamMembers.stream()
                 .filter(Coach.class::isInstance)
                 .map(Coach.class::cast)
                 .toList();
+    }
+
+    public void addTeamMember(TeamMember teamMember) {
+        this.getTeamMembers().add(teamMember);
+        teamMember.setTeam(this);
+    }
+    public void removeTeamMember(TeamMember teamMember){
+        this.getTeamMembers().remove(teamMember);
+        teamMember.setTeam(null);
     }
 }

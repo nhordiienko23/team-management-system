@@ -2,7 +2,6 @@ package com.nba.player;
 
 import com.nba.core.dto.response.TeamGroupResponse;
 import com.nba.core.exception.invalidData.InvalidPlayerDataException;
-import com.nba.core.exception.notFound.PlayerNotFoundException;
 import com.nba.team.Team;
 import com.nba.team.TeamRepository;
 import lombok.AllArgsConstructor;
@@ -24,10 +23,10 @@ class PlayerServiceImpl implements PlayerService {
     public ResponsePlayerDto addPlayer(RequestPlayerDto dto) {
         Player player = playerMapper.toPlayerEntity(dto);
         if (dto.teamId() != null) {
-            player.setTeam(findTeamById(dto.teamId()));
+            Team team = findTeamByIdOrThrow400(dto.teamId());
+            team.addTeamMember(player);
         }
-        Player savedPlayer = playerRepository.save(player);
-        return playerMapper.toPlayerDto(savedPlayer);
+        return playerMapper.toPlayerDto(playerRepository.save(player));
     }
 
     @Override
@@ -41,46 +40,41 @@ class PlayerServiceImpl implements PlayerService {
     @Override
     @Transactional
     public ResponsePlayerDto partialUpdatePlayer(Long playerId, PatchPlayerRequest request) {
-        Player player = playerRepository.getPlayerByIdOrThrow(playerId);
+        Player player = playerRepository.getPlayerByIdOrThrow404(playerId);
 
-        if (request.firstName() != null) {
-            player.setFirstName(request.firstName());
-        }
+        if (request.firstName() != null) player.setFirstName(request.firstName());
+        if (request.lastName() != null) player.setLastName(request.lastName());
+        if (request.salary() != null) player.setSalary(request.salary());
+        if (request.playerPositions() != null) player.setPlayerPositions(request.playerPositions());
+        if (request.rating() != null) player.setRating(request.rating());
+        if (request.championshipsWon() != null) player.setChampionshipsWon(request.championshipsWon());
 
-        if (request.lastName() != null) {
-            player.setLastName(request.lastName());
-        }
-
-        if (request.salary() != null) {
-            player.setSalary(request.salary());
-        }
         if (request.teamId() != null) {
-            player.setTeam(findTeamById(request.teamId()));
-        }
-        if (request.playerPositions() != null) {
-            player.setPlayerPositions(request.playerPositions());
+            Team newTeam = findTeamByIdOrThrow400(request.teamId());
+            if (player.getTeam() != null) {
+                player.getTeam().removeTeamMember(player);
+            }
+            newTeam.addTeamMember(player);
+
         }
 
-        if (request.rating() != null) {
-            player.setRating(request.rating());
-        }
-        if (request.championshipsWon() != null) {
-            player.setChampionshipsWon(request.championshipsWon());
-        }
         return playerMapper.toPlayerDto(player);
     }
 
     @Override
     @Transactional
     public void deletePlayer(Long playerId) {
-        if (!playerRepository.existsById(playerId)) throw new PlayerNotFoundException(playerId);
-        playerRepository.deleteById(playerId);
+        Player player = playerRepository.getPlayerByIdOrThrow404(playerId);
+        if (player.getTeam() != null) {
+            player.getTeam().removeTeamMember(player);
+        }
+        playerRepository.delete(player);
     }
 
     @Override
     @Transactional(readOnly = true)
     public ResponsePlayerDto getPlayerById(Long playerId) {
-        return playerMapper.toPlayerDto(playerRepository.getPlayerByIdOrThrow(playerId));
+        return playerMapper.toPlayerDto(playerRepository.getPlayerByIdOrThrow404(playerId));
     }
 
     @Override
@@ -94,7 +88,7 @@ class PlayerServiceImpl implements PlayerService {
     @Override
     @Transactional(readOnly = true)
     public TeamGroupResponse getTeammatesByPlayerId(Long playerId) {
-        Player player = playerRepository.getPlayerByIdOrThrow(playerId);
+        Player player = playerRepository.getPlayerByIdOrThrow404(playerId);
         if (player.getTeam() == null) {
             throw new InvalidPlayerDataException("Player with id " + playerId + " is a free agent and has no teammates");
         }
@@ -105,27 +99,38 @@ class PlayerServiceImpl implements PlayerService {
     @Override
     @Transactional
     public void changePlayerTeam(Long playerId, Long newTeamId) {
-        Player player = playerRepository.getPlayerByIdOrThrow(playerId);
-        Long currentTeamId = (player.getTeam() != null)
+        Player player = playerRepository.getPlayerByIdOrThrow404(playerId);
+
+        Long currentTeamId = player.getTeam() != null
                 ? player.getTeam().getId()
                 : null;
+
         if (Objects.equals(currentTeamId, newTeamId)) {
             throw new InvalidPlayerDataException(
-                    (newTeamId == null)
+                    newTeamId == null
                             ? "Player is already a free agent"
                             : "Player is already a team member of this team");
         }
 
-        if (newTeamId == null) {
-            player.setTeam(null);
-        } else {
-            player.setTeam(findTeamById(newTeamId));
+        Team newTeam = null;
+
+        if (newTeamId != null) {
+            newTeam = findTeamByIdOrThrow400(newTeamId);
+        }
+
+        if (player.getTeam() != null) {
+            player.getTeam().removeTeamMember(player);
+        }
+
+        if (newTeam != null) {
+            newTeam.addTeamMember(player);
         }
     }
 
-
-    private Team findTeamById(Long teamId) {
+    private Team findTeamByIdOrThrow400(Long teamId) {
         return teamRepository.findById(teamId).orElseThrow(() ->
                 new InvalidPlayerDataException("Team with id " + teamId + " not found"));
     }
+
+
 }

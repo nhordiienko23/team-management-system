@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/teams")
 @AllArgsConstructor
-@Tag(name = "team API")
+@Tag(name = "team API", description = "Endpoints for managing team information")
 public class TeamController {
     private final TeamService teamService;
 
@@ -48,6 +48,7 @@ public class TeamController {
                 .message("Team with id " + id + " was deleted successfully")
                 .build());
     }
+
     @Operation(summary = "adds player to team by id")
     @PostMapping("/{teamId}/players/{playerId}")
     public ResponseEntity<MessageResponse> addPlayer(@PathVariable Long teamId,
@@ -58,6 +59,7 @@ public class TeamController {
                         "to team with id " + teamId + " successfully")
                 .build());
     }
+
     @Operation(summary = "adds coach to team by id")
     @PostMapping("/{teamId}/coaches/{coachId}")
     public ResponseEntity<MessageResponse> addCoach(@PathVariable Long teamId,
@@ -68,6 +70,7 @@ public class TeamController {
                         "to team with id " + teamId + " successfully")
                 .build());
     }
+
     @Operation(summary = "deletes player from team by id")
     @DeleteMapping("/{teamId}/players/{playerId}")
     public ResponseEntity<MessageResponse> removePlayer(@PathVariable Long teamId,
@@ -78,6 +81,7 @@ public class TeamController {
                         "from team with id " + teamId + " successfully")
                 .build());
     }
+
     @Operation(summary = "deletes coach from team by id")
     @DeleteMapping("/{teamId}/coaches/{coachId}")
     public ResponseEntity<MessageResponse> removeCoach(@PathVariable Long teamId,
@@ -90,32 +94,37 @@ public class TeamController {
     }
 
     @Operation(summary = "deletes all team members from team by team id")
-    @PostMapping("/fire-team/{id}")
+    @DeleteMapping("{id}/members")
     public ResponseEntity<MessageResponse> fireAllTeamMembers(@PathVariable Long id) {
         teamService.fireAllTeamMembers(id);
         return ResponseEntity.ok(MessageResponse.builder()
                 .message("all team members were fired from team with id " + id)
                 .build());
     }
-    @Operation(summary = "updates team by id")
-    @PutMapping("/{id}")
+
+    @Operation(summary = "partially updates team by id")
+    @PatchMapping("/{id}")
     public ResponseEntity<ResponseTeamDto> updateTeam(@PathVariable Long id,
-                                                      @Valid @RequestBody RequestTeamDto dto) {
-        return ResponseEntity.ok(teamService.updateTeam(id, dto));
+                                                      @Valid @RequestBody PatchTeamRequest request) {
+        return ResponseEntity.ok(teamService.partialUpdateTeam(id, request));
     }
+
     @Operation(summary = "Returns list of teams flexibly filtered by any combination of parameters")
     @GetMapping("/search")
     public ResponseEntity<List<ResponseTeamDto>> searchTeam(@ParameterObject TeamSearchFilter filter) {
         return ResponseEntity.ok(teamService.searchTeams(filter));
     }
 
+
+    @Operation(summary = "Returns team lineup")
     @GetMapping("/{teamId}/team-lineup")
-    public ResponseEntity<TeamGroupResponse> getTeamLineup(@PathVariable Long teamId){
+    public ResponseEntity<TeamGroupResponse> getTeamLineup(@PathVariable Long teamId) {
         return ResponseEntity.ok(teamService.getTeamLineup(teamId));
     }
 
+    @Operation(summary = "Returns coaching staff")
     @GetMapping("/{teamId}/coaching-staff")
-    public ResponseEntity<TeamGroupResponse> getCoachingStaff(@PathVariable Long teamId){
+    public ResponseEntity<TeamGroupResponse> getCoachingStaff(@PathVariable Long teamId) {
         return ResponseEntity.ok(teamService.getCoachingStaff(teamId));
     }
 }

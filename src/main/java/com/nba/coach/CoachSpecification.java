@@ -30,7 +30,7 @@ import java.util.List;
             }
 
             if (filter.teamName() != null && !filter.teamName().isBlank()) {
-                predicates.add(cb.like(cb.lower(root.join("team", JoinType.LEFT).get("name"))
+                predicates.add(cb.like(cb.lower(root.join("team", JoinType.LEFT).get("teamName"))
                         , "%" + filter.teamName().toLowerCase() + "%"));
             }
 

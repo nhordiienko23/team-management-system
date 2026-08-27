@@ -6,10 +6,10 @@ import java.math.BigDecimal;
 import java.util.Set;
 
 public record RequestPlayerDto(
-        @NotBlank(message = "First name cannot be blank")
+        @NotBlank(message = "First teamName cannot be blank")
         String firstName,
 
-        @NotBlank(message = "Last name cannot be blank")
+        @NotBlank(message = "Last teamName cannot be blank")
         String lastName,
 
         @NotNull(message = "Salary cannot be null")

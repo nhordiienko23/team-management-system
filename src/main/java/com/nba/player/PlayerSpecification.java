@@ -29,7 +29,7 @@ import java.util.List;
             }
 
             if (filter.teamName() != null && !filter.teamName().isBlank()) {
-                predicates.add(cb.like(cb.lower(root.join("team", JoinType.LEFT).get("name")), "%" + filter.teamName().toLowerCase() + "%"));
+                predicates.add(cb.like(cb.lower(root.join("team", JoinType.LEFT).get("teamName")), "%" + filter.teamName().toLowerCase() + "%"));
             }
 
             if (filter.minRating() != null) {

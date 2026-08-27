@@ -6,7 +6,7 @@ import java.util.List;
 public interface TeamService {
     ResponseTeamDto addTeam(RequestTeamDto dto);
     List<ResponseTeamDto> getAllTeams();
-    ResponseTeamDto updateTeam(Long teamId, RequestTeamDto dto);
+    ResponseTeamDto partialUpdateTeam(Long teamId, PatchTeamRequest request);
     void deleteTeam (Long teamId);
     ResponseTeamDto getTeamById(Long teamId);
     List<ResponseTeamDto> searchTeams(TeamSearchFilter filter);

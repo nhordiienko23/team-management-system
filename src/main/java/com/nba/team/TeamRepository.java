@@ -17,7 +17,9 @@ public interface TeamRepository extends JpaRepository<Team, Long>, JpaSpecificat
 
     boolean existsByName(String name);
 
-    default Team getTeamByIdOrThrow(Long teamId){
+    default Team getTeamByIdOrThrow404(Long teamId){
         return findById(teamId).orElseThrow(()-> new TeamNotFoundException(teamId));
     }
+
+
 }

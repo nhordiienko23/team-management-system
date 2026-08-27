@@ -7,7 +7,7 @@ import org.springframework.data.jpa.domain.Specification;
 import java.util.ArrayList;
 import java.util.List;
 
- class TeamSpecification {
+class TeamSpecification {
     public static Specification<Team> buildQuery(TeamSearchFilter filter) {
         return ((root, query, cb) -> {
 
@@ -18,8 +18,8 @@ import java.util.List;
 
             List<Predicate> predicates = new ArrayList<>();
 
-            if (filter.name() != null && !filter.name().isBlank()) {
-                predicates.add(cb.like(cb.lower(root.get("teamName")), "%" + filter.name().toLowerCase() + "%"));
+            if (filter.teamName() != null && !filter.teamName().isBlank()) {
+                predicates.add(cb.like(cb.lower(root.get("name")), "%" + filter.teamName().toLowerCase() + "%"));
             }
 
             if (filter.minChampionshipTitleCount() != null) {
@@ -29,6 +29,7 @@ import java.util.List;
             if (filter.maxChampionshipTitleCount() != null) {
                 predicates.add(cb.lessThanOrEqualTo(root.get("championshipTitleCount"), filter.maxChampionshipTitleCount()));
             }
+
             if (filter.creationDateStart() != null) {
                 predicates.add(cb.greaterThanOrEqualTo(root.get("creationDate"), filter.creationDateStart()));
             }

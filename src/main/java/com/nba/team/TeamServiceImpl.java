@@ -57,7 +57,7 @@ class TeamServiceImpl implements TeamService {
             if (!team.getName().equals(request.teamName())
                     && teamRepository.existsByName(request.teamName())) {
                 throw new InvalidTeamDataException(
-                        "Team with name " + request.teamName() + " already exists");
+                        "Team with teamName " + request.teamName() + " already exists");
             }
 
             team.setName(request.teamName());

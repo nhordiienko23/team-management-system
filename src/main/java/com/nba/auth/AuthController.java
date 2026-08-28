@@ -1,6 +1,6 @@
 package com.nba.auth;
 
-import com.nba.user.UserDto;
+import com.nba.user.UserShortDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +16,7 @@ public class AuthController {
     private final  AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<UserDto> register(@Valid @RequestBody RegisterRequest registerRequest){
+    public ResponseEntity<UserShortDto> register(@Valid @RequestBody RegisterRequest registerRequest){
         return ResponseEntity.ok(authService.register(registerRequest));
     }
 }

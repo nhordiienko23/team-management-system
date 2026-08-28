@@ -30,16 +30,15 @@ public class UserSpecification {
                 predicates.add(cb.like(cb.lower(root.get("email")), "%" + filter.email().toLowerCase() + "%"));
             }
 
-
             if (filter.roles() != null && !filter.roles().isEmpty()) {
                 predicates.add(root.join("roles", JoinType.LEFT).in(filter.roles()));
             }
 
             if (filter.registeredAtStart() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("registerAt"), filter.registeredAtStart().atStartOfDay()));
+                predicates.add(cb.greaterThanOrEqualTo(root.get("registeredAt"), filter.registeredAtStart().atStartOfDay()));
             }
             if (filter.registeredAtEnd() != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("registerAt"), filter.registeredAtEnd().atTime(LocalTime.MAX)));
+                predicates.add(cb.lessThanOrEqualTo(root.get("registeredAt"), filter.registeredAtEnd().atTime(LocalTime.MAX)));
             }
 
             if (filter.lastLoginStart() != null) {

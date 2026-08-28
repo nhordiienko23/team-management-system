@@ -2,7 +2,6 @@ package com.nba.user;
 
 
 import com.nba.core.exception.invalidData.InvalidUserDataException;
-import com.nba.core.exception.notFound.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,14 +19,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUserByUsername(String username) {
         return userRepository.findByUsername(username).orElseThrow(() ->
-                new UserNotFoundException("User with teamName " + username + " not found"));
+                new InvalidUserDataException("User with username " + username + " not found"));
     }
 
     @Override
     @Transactional
-    public UserDto saveToDataBase(User user) {
+    public UserShortDto saveToDataBase(User user) {
         User savedUser = userRepository.save(user);
-        return userMapper.toUserDto(savedUser);
+        return userMapper.toUserShortDto(savedUser);
     }
 
     @Override
@@ -37,14 +36,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserDto getMyProfile(Long userId) {
-        return userMapper.toUserDto(getUserById(userId));
+    public UserShortDto getUserById(Long userId) {
+        return userMapper.toUserShortDto(userRepository.findUserByIdOrThrow404(userId));
     }
 
     @Override
     @Transactional
-    public UserDto partialUpdateUserProfileById(Long userId, UpdateRequest request) {
-        User user = getUserById(userId);
+    public UserShortDto partialUpdateUserProfileById(Long userId, UserUpdateRequest request) {
+        User user = userRepository.findUserByIdOrThrow404(userId);
 
         if (request.username() != null) {
             if (!user.getUsername().equals(request.username()) && userRepository.existsByUsername(request.username())) {
@@ -61,28 +60,28 @@ public class UserServiceImpl implements UserService {
             }
             user.setEmail(request.email());
         }
-        return userMapper.toUserDto(user);
+        return userMapper.toUserShortDto(user);
     }
 
     @Override
     @Transactional
     public void deleteUserById(Long userId) {
-        userRepository.delete(getUserById(userId));
+        userRepository.delete(userRepository.findUserByIdOrThrow404(userId));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserDto> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(userMapper::toUserDto)
+    public List<UserShortDto> getAllUsers() {
+        return userRepository.findAllWithRoles().stream()
+                .map(userMapper::toUserShortDto)
                 .toList();
     }
 
     @Override
     @Transactional
-    public void passwordUpdate(Long userId, PasswordUpdateRequest request) {
+    public void passwordUpdateByUserId(Long userId, PasswordUpdateRequest request) {
 
-        User user = getUserById(userId);
+        User user = userRepository.findUserByIdOrThrow404(userId);
 
         if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
             throw new InvalidUserDataException("Current password is incorrect");
@@ -100,16 +99,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ResponseSearchUser> searchUsers(UserSearchFilter filter) {
+    public List<UserFullDto> searchUsers(UserSearchFilter filter) {
         return userRepository.findAll(UserSpecification.buildQuery(filter)).stream()
-                .map(userMapper::toResponseSearchUser)
+                .map(userMapper::toUserFullDto)
                 .toList();
     }
 
-
-    private User getUserById(Long id) {
-        return userRepository.findById(id).orElseThrow(() ->
-                new UserNotFoundException("User with teamName " + id + " not found"));
+    @Override
+    @Transactional
+    public UserShortDto createUserAccount(UserCreationRequest request) {
+        if (userRepository.existsByUsername(request.username()))
+            throw new InvalidUserDataException("User with name " + request.username() + " already exists");
+        if (userRepository.existsByEmail(request.email()))
+            throw new InvalidUserDataException("User with email " + request.email() + " already exists");
+        User newUser = userMapper.toUserEntity(request);
+        return userMapper.toUserShortDto(userRepository.save(newUser));
     }
 
 

@@ -5,19 +5,20 @@ import java.util.List;
 public interface UserService {
     User getUserByUsername(String username);
 
-    UserDto saveToDataBase(User user);
+    UserShortDto saveToDataBase(User user);
 
     boolean existsByUsername(String username);
 
-    UserDto getMyProfile(Long userId);
+    UserShortDto getUserById(Long userId);
 
-    UserDto partialUpdateUserProfileById(Long userId, UpdateRequest updateRequest);
+    UserShortDto partialUpdateUserProfileById(Long userId, UserUpdateRequest updateRequest);
 
     void deleteUserById(Long userId);
 
-    List<UserDto> getAllUsers();
+    List<UserShortDto> getAllUsers();
 
-    void passwordUpdate(Long userId, PasswordUpdateRequest passwordUpdateRequest);
-    List<ResponseSearchUser> searchUsers(UserSearchFilter filter);
+    void passwordUpdateByUserId(Long userId, PasswordUpdateRequest passwordUpdateRequest);
+    List<UserFullDto> searchUsers(UserSearchFilter filter);
 
+    UserShortDto createUserAccount(UserCreationRequest request);
 }

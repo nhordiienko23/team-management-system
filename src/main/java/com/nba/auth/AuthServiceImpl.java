@@ -2,7 +2,7 @@ package com.nba.auth;
 
 import com.nba.core.exception.invalidData.UserInvalidDataException;
 import com.nba.user.User;
-import com.nba.user.UserDto;
+import com.nba.user.UserShortDto;
 import com.nba.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,7 +16,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public UserDto register(RegisterRequest registerRequest) {
+    public UserShortDto register(RegisterRequest registerRequest) {
         if (userService.existsByUsername(registerRequest.username()))
             throw new UserInvalidDataException("User with teamName " + registerRequest.username() + " already exist");
         User newUser = authMapper.toUserEntity(registerRequest);

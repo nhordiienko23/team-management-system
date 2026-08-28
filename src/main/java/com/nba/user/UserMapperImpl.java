@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 @Component
 @AllArgsConstructor
 public class UserMapperImpl implements UserMapper {
@@ -11,25 +13,41 @@ public class UserMapperImpl implements UserMapper {
 
 
     @Override
-    public UserDto toUserDto(User user) {
-        return UserDto.builder()
+    public UserShortDto toUserShortDto(User user) {
+        return UserShortDto.builder()
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .build();
     }
 
+
     @Override
-    public ResponseSearchUser toResponseSearchUser(User user) {
-        return ResponseSearchUser.builder()
+    public UserFullDto toUserFullDto(User user) {
+        return UserFullDto.builder()
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .roles(user.getRoles().stream()
                         .map(UserRole::name)
                         .toList())
-                .registeredAt(user.getRegisterAt())
-                .lastLogin(user.getLastLogin())
+                .registeredAt(user.getRegisterAt().toString())
+                .lastLogin((user.getLastLogin() != null)
+                        ? user.getLastLogin().toString()
+                        : null)
                 .build();
     }
+
+    @Override
+    public User toUserEntity(UserCreationRequest request) {
+        return User.builder()
+                .username(request.username())
+                .password(passwordEncoder.encode(request.password()))
+                .email(request.email())
+                .roles(request.roles())
+                .registerAt(LocalDateTime.now())
+                .build();
+    }
+
+
 }

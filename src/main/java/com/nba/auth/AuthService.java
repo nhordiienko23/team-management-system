@@ -1,7 +1,7 @@
 package com.nba.auth;
 
-import com.nba.user.UserDto;
+import com.nba.user.UserShortDto;
 
 public interface AuthService {
-    UserDto register(RegisterRequest registerRequest);
+    UserShortDto register(RegisterRequest registerRequest);
 }

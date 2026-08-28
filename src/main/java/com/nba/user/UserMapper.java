@@ -2,6 +2,8 @@ package com.nba.user;
 
 
 public interface UserMapper {
-    UserDto toUserDto(User user);
-    ResponseSearchUser toResponseSearchUser(User user);
+    UserShortDto toUserShortDto(User user);
+    UserFullDto toUserFullDto(User user);
+    User toUserEntity(UserCreationRequest request);
+
 }

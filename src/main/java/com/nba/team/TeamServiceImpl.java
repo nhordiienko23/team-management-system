@@ -216,12 +216,12 @@ class TeamServiceImpl implements TeamService {
     }
 
     private Coach findCoachByIdOrThrow400(Long coachId) {
-        return coachRepository.findById(coachId).orElseThrow(() ->
+        return coachRepository.findWithTeamById(coachId).orElseThrow(() ->
                 new InvalidTeamDataException("Coach with id " + coachId + " not found"));
     }
 
     private Player findPlayerByIdOrThrow400(Long playerId) {
-        return playerRepository.findById(playerId).orElseThrow(() ->
+        return playerRepository.findPlayerWithTeamAndPositionsById(playerId).orElseThrow(() ->
                 new InvalidTeamDataException("Player with id " + playerId + " not found"));
     }
 }

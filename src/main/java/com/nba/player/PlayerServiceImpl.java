@@ -138,7 +138,7 @@ class PlayerServiceImpl implements PlayerService {
     }
 
     private Team findTeamByIdOrThrow400(Long teamId) {
-        return teamRepository.findById(teamId).orElseThrow(() ->
+        return teamRepository.findByIdWithTeamMembers(teamId).orElseThrow(() ->
                 new InvalidPlayerDataException("Team with id " + teamId + " not found"));
     }
 

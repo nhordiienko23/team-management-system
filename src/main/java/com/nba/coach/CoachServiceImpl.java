@@ -136,7 +136,7 @@ class CoachServiceImpl implements CoachService {
     }
 
     private Team findTeamByIdOrThrow400(Long teamId) {
-        return teamRepository.findById(teamId).orElseThrow(() ->
+        return teamRepository.findByIdWithTeamMembers(teamId).orElseThrow(() ->
                 new InvalidCoachDataException("Team with id " + teamId + " not found"));
     }
 }

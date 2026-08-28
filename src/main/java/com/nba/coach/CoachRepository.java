@@ -18,9 +18,15 @@ public interface CoachRepository extends JpaRepository<Coach, Long>, JpaSpecific
     @EntityGraph(attributePaths = "team")
     List<Coach> findAllByTeamId(Long teamId);
 
-    default Coach getCoachByIdOrThrow404(Long coachId) {
-        return findById(coachId).orElseThrow(() -> new CoachNotFoundException(coachId));
-    }
+    @EntityGraph(attributePaths = "team")
+    Optional<Coach> findWithTeamById(Long coachId);
+
+    @EntityGraph(attributePaths = "team")
     Optional<Coach> findByIdAndTeamId(Long coachId, Long teamId);
+
+    default Coach getCoachByIdOrThrow404(Long coachId) {
+        return findWithTeamById(coachId).orElseThrow(() -> new CoachNotFoundException(coachId));
+    }
+
 
 }

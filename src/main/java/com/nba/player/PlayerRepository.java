@@ -18,10 +18,15 @@ public interface PlayerRepository extends JpaRepository<Player, Long>, JpaSpecif
     @EntityGraph(attributePaths = {"team", "playerPositions"})
     List<Player> findAllByTeamId(Long teamId);
 
+    @EntityGraph(attributePaths = {"team", "playerPositions"})
+    Optional<Player> findPlayerWithTeamAndPositionsById(Long playerId);
+
+    @EntityGraph(attributePaths = {"team", "playerPositions"})
+    Optional<Player> findByIdAndTeamId(Long playerId, Long teamId);
+
     default Player getPlayerByIdOrThrow404(Long playerId) {
-        return findById(playerId).orElseThrow(() -> new PlayerNotFoundException(playerId));
+        return findPlayerWithTeamAndPositionsById(playerId).orElseThrow(() -> new PlayerNotFoundException(playerId));
     }
 
-    Optional<Player> findByIdAndTeamId(Long playerId, Long teamId);
 
 }

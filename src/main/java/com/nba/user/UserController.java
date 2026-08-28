@@ -59,7 +59,7 @@ public class UserController {
                 .message("Your password was successfully updated")
                 .build());
     }
-
+    @Operation(summary = "Returns list of user flexibly filtered by any combination of parameters")
     @GetMapping("/search")
     public ResponseEntity<List<ResponseSearchUser>> searchUsers(@ParameterObject UserSearchFilter filter) {
         return ResponseEntity.ok(userService.searchUsers(filter));

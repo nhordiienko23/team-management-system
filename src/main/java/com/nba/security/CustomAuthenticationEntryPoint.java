@@ -20,18 +20,22 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        if (request.getRequestURI().startsWith("/api/")) {
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.UNAUTHORIZED.value(),
-                "Unauthorized",
-                "You need to log in to access this resource.",
-                LocalDateTime.now()
-        );
+            ErrorResponse errorResponse = new ErrorResponse(
+                    HttpStatus.UNAUTHORIZED.value(),
+                    "Unauthorized",
+                    "You need to log in to access this resource.",
+                    LocalDateTime.now()
+            );
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        mapper.writeValue(response.getOutputStream(), errorResponse);
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            mapper.writeValue(response.getOutputStream(), errorResponse);
+        } else {
+            response.sendRedirect("/login");
+        }
     }
 }

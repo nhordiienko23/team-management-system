@@ -1,14 +1,12 @@
 package com.nba.coach;
 
-import com.nba.core.dto.response.MessageResponse;
 import com.nba.core.dto.response.TeamGroupResponse;
-import com.nba.core.dto.response.TeamTransferResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,17 +26,18 @@ public class CoachController {
         return ResponseEntity.ok(coachService.getCoachById(id));
     }
 
-    @Operation(summary = "returns list of all coaches")
+    @Operation(summary = "returns paginated list of all coaches")
     @GetMapping
-    public List<ResponseCoachDto> getAllCoaches() {
-        return coachService.getAllCoaches();
+    public ResponseEntity<Page<ResponseCoachDto>> getAllCoaches(@ParameterObject Pageable pageable) {
+        return ResponseEntity.ok(coachService.getAllCoaches(pageable));
     }
 
     @Operation(summary = "Returns list of coaches flexibly filtered by any combination of parameters")
     @GetMapping("/search")
-    public List<ResponseCoachDto> searchCoaches(
-            @ParameterObject CoachSearchFilter filter) {
-        return coachService.searchCoaches(filter);
+    public Page<ResponseCoachDto> searchCoaches(
+            @ParameterObject CoachSearchFilter filter,
+            @ParameterObject Pageable pageable) {
+        return coachService.searchCoaches(filter, pageable);
     }
 
     @Operation(summary = "returns list of colleagues")

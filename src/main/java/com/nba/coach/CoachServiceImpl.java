@@ -7,6 +7,8 @@ import com.nba.core.mapper.TeamTransferMapper;
 import com.nba.team.Team;
 import com.nba.team.TeamRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,10 +69,9 @@ class CoachServiceImpl implements CoachService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ResponseCoachDto> getAllCoaches() {
-        return coachRepository.findAll().stream()
-                .map(coachMapper::toCoachDto)
-                .toList();
+    public Page<ResponseCoachDto> getAllCoaches(Pageable pageable) {
+        Page <Coach> coachPage = coachRepository.findAll(pageable);
+        return coachPage.map(coachMapper::toCoachDto);
     }
 
     @Override
@@ -81,10 +82,9 @@ class CoachServiceImpl implements CoachService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ResponseCoachDto> searchCoaches(CoachSearchFilter filter) {
-        return coachRepository.findAll(CoachSpecification.buildQuery(filter)).stream()
-                .map(coachMapper::toCoachDto)
-                .toList();
+    public Page<ResponseCoachDto> searchCoaches(CoachSearchFilter filter,Pageable pageable) {
+        return coachRepository.findAll(CoachSpecification.buildQuery(filter),pageable)
+                .map(coachMapper::toCoachDto);
     }
 
     @Override

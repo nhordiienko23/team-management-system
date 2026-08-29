@@ -1,6 +1,6 @@
 package com.nba.audit;
 
- enum LogStatus {
+ public enum LogStatus {
     SUCCESS,
     ERROR
 }

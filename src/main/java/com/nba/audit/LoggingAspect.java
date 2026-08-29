@@ -17,27 +17,30 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 class LoggingAspect {
 
-
     private final AuditLogService auditLogService;
     private static final Logger logger = LoggerFactory.getLogger(LoggingAspect.class);
 
+    
     @Pointcut("execution(* com.nba..*Service.add*(..)) || " +
             "execution(* com.nba..*Service.update*(..)) || " +
+            "execution(* com.nba..*Service.partialUpdate*(..)) || " +
+            "execution(* com.nba..*Service.passwordUpdate*(..)) || " +
             "execution(* com.nba..*Service.delete*(..)) || " +
             "execution(* com.nba..*Service.remove*(..)) || " +
             "execution(* com.nba..*Service.fire*(..)) || " +
+            "execution(* com.nba..*Service.create*(..)) || " +
+            "execution(* com.nba..*Service.set*(..)) || " +
+            "execution(* com.nba..*Service.change*(..)) || " +
             "execution(* com.nba.auth.AuthService.register(..))")
     public void serviceModifyingMethods() {
     }
 
-
     @AfterReturning(pointcut = "serviceModifyingMethods()")
     public void logAfterReturning(JoinPoint joinPoint) {
         String methodName = joinPoint.getSignature().getName();
-        String arguments = Arrays.toString(joinPoint.getArgs());
+        String arguments = maskPasswords(Arrays.toString(joinPoint.getArgs()));
 
         logger.info("AUDIT LOG [SUCCESS]: Operation '{}' completed successfully.", methodName);
-
 
         AuditLog log = AuditLog.builder()
                 .methodName(methodName)
@@ -51,10 +54,9 @@ class LoggingAspect {
     @AfterThrowing(pointcut = "serviceModifyingMethods()", throwing = "error")
     public void logAfterThrowing(JoinPoint joinPoint, Throwable error) {
         String methodName = joinPoint.getSignature().getName();
-        String arguments = Arrays.toString(joinPoint.getArgs());
+        String arguments = maskPasswords(Arrays.toString(joinPoint.getArgs()));
 
         logger.error("AUDIT LOG [ERROR]: Operation '{}' failed. Error: {}", methodName, error.getMessage());
-
 
         AuditLog log = AuditLog.builder()
                 .methodName(methodName)
@@ -64,5 +66,11 @@ class LoggingAspect {
                 .build();
 
         auditLogService.saveLog(log);
+    }
+
+
+    private String maskPasswords(String args) {
+        if (args == null) return null;
+        return args.replaceAll("password=[^,\\)\\]]+", "password=***");
     }
 }

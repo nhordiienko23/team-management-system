@@ -1,5 +1,5 @@
 package com.nba.audit;
 
- interface AuditLogService {
+ public interface AuditLogService {
     void saveLog(AuditLog log);
 }

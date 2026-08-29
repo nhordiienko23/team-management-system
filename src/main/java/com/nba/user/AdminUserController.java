@@ -19,38 +19,38 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin/users")
 @RequiredArgsConstructor
-@Tag(name = "User API", description = "Endpoints for administrators to manage user profiles")
+@Tag(name = "User API", description = "Endpoints for managing user profiles")
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminUserController {
     private final UserService userService;
 
-    @Operation(summary = "Returns list of all users (for admins)")
+    @Operation(summary = "Returns list of all users ")
     @GetMapping
     public ResponseEntity<List<UserShortDto>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
-    @Operation(summary = "Returns list of user flexibly filtered by any combination of parameters (for admins)")
+    @Operation(summary = "Returns list of user flexibly filtered by any combination of parameters ")
     @GetMapping("/search")
     public ResponseEntity<List<UserFullDto>> searchUsers(@ParameterObject UserSearchFilter filter) {
         return ResponseEntity.ok(userService.searchUsers(filter));
     }
 
 
-    @Operation(summary = "returns user profile by id (for admins)")
+    @Operation(summary = "returns user profile by id")
     @GetMapping("/{userId}")
     public ResponseEntity<UserShortDto> getUserById(@PathVariable Long userId) {
         return ResponseEntity.ok(userService.getUserProfileById(userId));
     }
 
-    @Operation(summary = "updates user profile by user id (for admins)")
+    @Operation(summary = "updates user profile by user id ")
     @PatchMapping("/{userId}")
     public ResponseEntity<UserShortDto> updateUserById(@PathVariable Long userId,
                                                        @Valid @RequestBody UserUpdateRequest request) {
         return ResponseEntity.ok(userService.partialUpdateUserProfileById(userId, request));
     }
 
-    @Operation(summary = "delete user account by user id (for admins)")
+    @Operation(summary = "delete user account by user id ")
     @DeleteMapping("/{userId}")
     public ResponseEntity<MessageResponse> deleteUserById(@PathVariable Long userId,
                                                           @AuthenticationPrincipal CustomUserDetails customUserDetails) {
@@ -66,7 +66,7 @@ public class AdminUserController {
                         .build());
     }
 
-    @Operation(summary = "create new user account (for admins)")
+    @Operation(summary = "create new user account ")
     @PostMapping
     public ResponseEntity<UserShortDto> createNewUser(@Valid @RequestBody UserCreationRequest request) {
         return ResponseEntity
@@ -74,7 +74,7 @@ public class AdminUserController {
                 .body(userService.createUserAccount(request));
     }
 
-    @Operation(summary = "Sets new password for user by user id (for admins)")
+    @Operation(summary = "Sets new password for user by user id ")
     @PatchMapping("/{userId}/updateUserPassword")
     public ResponseEntity<MessageResponse> setUserPassword(@PathVariable Long userId,
                                                               @Valid @RequestBody PasswordUpdateRequestForAdmins request) {

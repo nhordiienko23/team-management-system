@@ -45,4 +45,11 @@ public class OpenApiConfig {
                 .pathsToMatch("/api/admin/users/**")
                 .build();
     }
+    @Bean
+    public GroupedOpenApi adminTeamApi() {
+        return GroupedOpenApi.builder()
+                .group("team API for admins")
+                .pathsToMatch("/api/admin/teams/**")
+                .build();
+    }
 }

@@ -14,7 +14,7 @@ import java.util.Optional;
 @Repository
 public interface PlayerRepository extends JpaRepository<Player, Long>, JpaSpecificationExecutor<Player> {
 
-    @EntityGraph(attributePaths = {"team", "playerPositions"})
+    @Override
     Page<Player> findAll(Pageable pageable);
 
     @EntityGraph(attributePaths = {"team", "playerPositions"})

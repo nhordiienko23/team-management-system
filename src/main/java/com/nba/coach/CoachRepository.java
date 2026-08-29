@@ -15,7 +15,7 @@ import java.util.Optional;
 @Repository
 public interface CoachRepository extends JpaRepository<Coach, Long>, JpaSpecificationExecutor<Coach> {
 
-    @EntityGraph(attributePaths = "team")
+    @Override
     Page<Coach> findAll(Pageable pageable);
 
     @EntityGraph(attributePaths = "team")

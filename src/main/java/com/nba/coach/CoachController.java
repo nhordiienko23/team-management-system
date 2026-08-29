@@ -19,13 +19,8 @@ import java.util.List;
 @AllArgsConstructor
 @Tag(name = "coach API", description = "Endpoints for managing coach information")
 public class CoachController {
-    private final CoachService coachService;
 
-    @Operation(summary = "creates new coach")
-    @PostMapping
-    public ResponseEntity<ResponseCoachDto> addCoach(@Valid @RequestBody RequestCoachDto dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(coachService.addCoach(dto));
-    }
+    private final CoachService coachService;
 
     @Operation(summary = "returns coach by id")
     @GetMapping("/{id}")
@@ -46,34 +41,9 @@ public class CoachController {
         return coachService.searchCoaches(filter);
     }
 
-    @Operation(summary = "partially updates coach by id")
-    @PatchMapping("/{id}")
-    public ResponseEntity<ResponseCoachDto> updateCoach(@PathVariable Long id,
-                                                        @Valid @RequestBody PatchCoachRequest request) {
-        return ResponseEntity.ok(coachService.partialUpdateCoach(id, request));
-    }
-
-    @Operation(summary = "deletes coach by id")
-    @DeleteMapping("/{id}")
-    public ResponseEntity<MessageResponse> deleteCoach(@PathVariable Long id) {
-        coachService.deleteCoach(id);
-        return ResponseEntity.ok(MessageResponse.builder()
-                .message("Coach with id " + id + " was deleted successfully")
-                .build());
-    }
-
     @Operation(summary = "returns list of colleagues")
     @GetMapping("/{coachId}/colleagues")
     public ResponseEntity<TeamGroupResponse> getColleagues(@PathVariable Long coachId) {
         return ResponseEntity.ok(coachService.getColleaguesByCoachId(coachId));
     }
-
-    @Operation(summary = "changes coach team or makes him a free agent if teamId is not provided")
-    @PatchMapping("/{coachId}/change-team")
-    public ResponseEntity<TeamTransferResponse> changeCoachTeam(@PathVariable Long coachId,
-                                                                @RequestParam(required = false) Long newTeamId) {
-
-        return ResponseEntity.ok(coachService.changeCoachTeam(coachId, newTeamId));
-    }
-
 }

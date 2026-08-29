@@ -59,4 +59,11 @@ public class OpenApiConfig {
                 .pathsToMatch("/api/admin/players/**")
                 .build();
     }
+    @Bean
+    public GroupedOpenApi adminCoachApi() {
+        return GroupedOpenApi.builder()
+                .group("coach API for admins")
+                .pathsToMatch("/api/admin/coaches/**")
+                .build();
+    }
 }

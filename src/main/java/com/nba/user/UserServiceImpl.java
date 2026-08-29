@@ -46,14 +46,6 @@ public class UserServiceImpl implements UserService {
         return userMapper.toUserShortDto(savedUser);
     }
 
-    @Override
-    public boolean existsByUsername(String username) {
-        return userRepository.existsByUsername(username);
-    }
-    @Override
-    public boolean existsByEmail(String email) {
-        return userRepository.existsByEmail(email);
-    }
 
     @Override
     @Transactional(readOnly = true)
@@ -147,7 +139,7 @@ public class UserServiceImpl implements UserService {
     public User createOAuth2User(String username, String email) {
         String uniqueUsername = username;
 
-        if (existsByUsername(username)) {
+        if (userRepository.existsByUsername(username)) {
             String shortUuid = java.util.UUID.randomUUID().toString().substring(0, 5);
             uniqueUsername = username + "_" + shortUuid;
         }

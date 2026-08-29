@@ -10,9 +10,7 @@ public interface UserService {
 
     UserShortDto saveToDataBaseAndReturnDto(User user);
 
-    boolean existsByUsername(String username);
 
-    boolean existsByEmail(String email);
 
     UserShortDto getUserById(Long userId);
 

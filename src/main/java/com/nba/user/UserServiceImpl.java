@@ -3,12 +3,13 @@ package com.nba.user;
 
 import com.nba.core.exception.invalidData.InvalidUserDataException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -85,10 +86,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserShortDto> getAllUsers() {
-        return userRepository.findAllWithRoles().stream()
-                .map(userMapper::toUserShortDto)
-                .toList();
+    public Page<UserShortDto> getAllUsers(Pageable pageable) {
+        Page<User> userPage = userRepository.findAll(pageable);
+        return userPage.map(userMapper::toUserShortDto);
     }
 
     @Override
@@ -117,10 +117,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserFullDto> searchUsers(UserSearchFilter filter) {
-        return userRepository.findAll(UserSpecification.buildQuery(filter)).stream()
-                .map(userMapper::toUserFullDto)
-                .toList();
+    public Page<UserFullDto> searchUsers(UserSearchFilter filter,Pageable pageable) {
+        return userRepository.findAll(UserSpecification.buildQuery(filter),pageable)
+                .map(userMapper::toUserFullDto);
     }
 
     @Override

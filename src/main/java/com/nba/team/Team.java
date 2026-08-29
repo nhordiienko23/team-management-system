@@ -47,11 +47,18 @@ public class Team {
                 .toList();
     }
 
-    public void addTeamMember(TeamMember teamMember) {
-        this.getTeamMembers().add(teamMember);
-        teamMember.setTeam(this);
+    public void addTeamMember(TeamMember member) {
+        if (member == null) {
+            return;
+        }
+
+        member.checkTeamLimits(this);
+        
+        this.teamMembers.add(member);
+        member.setTeam(this);
     }
-    public void removeTeamMember(TeamMember teamMember){
+
+    public void removeTeamMember(TeamMember teamMember) {
         this.getTeamMembers().remove(teamMember);
         teamMember.setTeam(null);
     }

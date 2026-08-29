@@ -39,4 +39,6 @@ public abstract class TeamMember {
 
     private Integer championshipsWon;
 
+    public abstract void checkTeamLimits(Team team);
+
 }

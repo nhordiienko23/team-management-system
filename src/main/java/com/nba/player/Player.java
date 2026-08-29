@@ -1,6 +1,8 @@
 package com.nba.player;
 
+import com.nba.core.exception.invalidData.InvalidTeamDataException;
 import com.nba.core.model.TeamMember;
+import com.nba.team.Team;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,4 +30,12 @@ public class Player extends TeamMember {
     private Set<PlayerPosition> playerPositions;
 
     private Integer rating;
+
+
+    @Override
+    public void checkTeamLimits(Team team) {
+        if (team.getPlayers().size() >= 15) {
+            throw new InvalidTeamDataException("The team roster is full. Maximum 15 players allowed.");
+        }
+    }
 }

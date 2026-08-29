@@ -1,6 +1,8 @@
 package com.nba.player;
 
 import com.nba.core.exception.notFound.PlayerNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -13,7 +15,7 @@ import java.util.Optional;
 public interface PlayerRepository extends JpaRepository<Player, Long>, JpaSpecificationExecutor<Player> {
 
     @EntityGraph(attributePaths = {"team", "playerPositions"})
-    List<Player> findAll();
+    Page<Player> findAll(Pageable pageable);
 
     @EntityGraph(attributePaths = {"team", "playerPositions"})
     List<Player> findAllByTeamId(Long teamId);

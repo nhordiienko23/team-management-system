@@ -7,6 +7,8 @@ import com.nba.core.mapper.TeamTransferMapper;
 import com.nba.team.Team;
 import com.nba.team.TeamRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,10 +36,9 @@ class PlayerServiceImpl implements PlayerService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ResponsePlayerDto> getAllPlayers() {
-        return playerRepository.findAll().stream()
-                .map(playerMapper::toPlayerDto)
-                .toList();
+    public Page<ResponsePlayerDto> getAllPlayers(Pageable pageable) {
+        Page<Player> playerPage = playerRepository.findAll(pageable);
+        return playerPage.map(playerMapper::toPlayerDto);
     }
 
     @Override
@@ -82,10 +83,9 @@ class PlayerServiceImpl implements PlayerService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ResponsePlayerDto> searchPlayers(PlayerSearchFilter filter) {
-        return playerRepository.findAll(PlayerSpecification.buildQuery(filter)).stream()
-                .map(playerMapper::toPlayerDto)
-                .toList();
+    public Page<ResponsePlayerDto> searchPlayers(PlayerSearchFilter filter, Pageable pageable) {
+        return playerRepository.findAll(PlayerSpecification.buildQuery(filter), pageable)
+                .map(playerMapper::toPlayerDto);
     }
 
     @Override

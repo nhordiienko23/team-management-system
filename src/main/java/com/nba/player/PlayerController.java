@@ -4,6 +4,8 @@ import com.nba.core.dto.response.TeamGroupResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,8 +24,8 @@ public class PlayerController {
 
     @Operation(summary = "returns list of all players")
     @GetMapping
-    public ResponseEntity<List<ResponsePlayerDto>> getAllPlayers() {
-        return ResponseEntity.ok(playerService.getAllPlayers());
+    public ResponseEntity<Page<ResponsePlayerDto>> getAllPlayers(@ParameterObject Pageable pageable) {
+        return ResponseEntity.ok(playerService.getAllPlayers(pageable));
     }
 
     @Operation(summary = "returns player by id")
@@ -34,8 +36,9 @@ public class PlayerController {
 
     @Operation(summary = "returns list of players flexibly filtered by any combination of parameters")
     @GetMapping("/search")
-    public ResponseEntity<List<ResponsePlayerDto>> searchPlayers(@ParameterObject PlayerSearchFilter filter) {
-        return ResponseEntity.ok(playerService.searchPlayers(filter));
+    public ResponseEntity<Page<ResponsePlayerDto>> searchPlayers(@ParameterObject PlayerSearchFilter filter,
+                                                                 @ParameterObject Pageable pageable) {
+        return ResponseEntity.ok(playerService.searchPlayers(filter,pageable));
     }
 
     @Operation(summary = "returns list of teammates")

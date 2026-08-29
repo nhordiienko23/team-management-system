@@ -34,10 +34,10 @@ public class CoachController {
 
     @Operation(summary = "Returns list of coaches flexibly filtered by any combination of parameters")
     @GetMapping("/search")
-    public Page<ResponseCoachDto> searchCoaches(
+    public ResponseEntity<Page<ResponseCoachDto>> searchCoaches(
             @ParameterObject CoachSearchFilter filter,
             @ParameterObject Pageable pageable) {
-        return coachService.searchCoaches(filter, pageable);
+        return ResponseEntity.ok(coachService.searchCoaches(filter, pageable));
     }
 
     @Operation(summary = "returns list of colleagues")

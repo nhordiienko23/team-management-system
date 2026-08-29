@@ -34,6 +34,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
+    public void setUserPasswordById(Long userId, String newPassword) {
+        User user = userRepository.findUserByIdOrThrow404(userId);
+        user.setPassword(passwordEncoder.encode(newPassword));
+    }
+
+    @Override
     public User getUserByUsername(String username) {
         return userRepository.findByUsername(username).orElseThrow(() ->
                 new InvalidUserDataException("User with username " + username + " not found"));
@@ -49,7 +56,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserShortDto getUserById(Long userId) {
+    public UserShortDto getUserProfileById(Long userId) {
         return userMapper.toUserShortDto(userRepository.findUserByIdOrThrow404(userId));
     }
 
@@ -86,7 +93,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void passwordUpdateByUserId(Long userId, PasswordUpdateRequest request) {
+    public void passwordUpdateByUserIdForCurrentUser(Long userId, PasswordUpdateRequest request) {
 
         User user = userRepository.findUserByIdOrThrow404(userId);
 

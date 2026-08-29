@@ -39,7 +39,7 @@
         <div class="card-body p-4">
             <h3 class="text-center mb-4">Welcome Back</h3>
 
-            <!-- Сообщения от Spring Security и нашего редиректа -->
+
             <div th:if="${param.error}" class="alert alert-danger">
                 Invalid username or password.
             </div>
@@ -50,7 +50,7 @@
                 Registration successful! Please log in.
             </div>
 
-            <!-- Форма отправляет данные на /login (классическая авторизация) -->
+
             <form th:action="@{/login}" method="post">
                 <div class="mb-3">
                     <label for="username" class="form-label">Username</label>
@@ -63,25 +63,24 @@
                 <button type="submit" class="btn btn-primary w-100">Log in</button>
             </form>
 
-            <!-- Разделитель -->
+
             <div class="divider-custom">
                 <span class="px-2 small text-uppercase fw-bold">or</span>
             </div>
 
-            <!-- Кнопки OAuth2 -->
+
             <div class="d-grid gap-2">
-                <!-- Ссылка для Google -->
+
                 <a th:href="@{/oauth2/authorization/google}" class="btn btn-outline-danger">
                     <i class="fa-brands fa-google me-2"></i> Log in with Google
                 </a>
 
-                <!-- Ссылка для GitHub -->
+
                 <a th:href="@{/oauth2/authorization/github}" class="btn btn-outline-dark">
                     <i class="fa-brands fa-github me-2"></i> Log in with GitHub
                 </a>
 
-                <!-- Ссылка для Custom Auth Server -->
-                <!-- ВАЖНО: замени 'my-custom-server' на то имя (registrationId), которое ты укажешь в application.yml -->
+
                 <a th:href="@{/oauth2/authorization/my-custom-auth}" class="btn btn-outline-primary">
                     <i class="fa-solid fa-shield-halved me-2"></i> Log in with Custom Server
                 </a>

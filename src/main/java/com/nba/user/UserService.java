@@ -1,7 +1,5 @@
 package com.nba.user;
 
-import com.nba.core.exception.invalidData.InvalidUserDataException;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -12,7 +10,7 @@ public interface UserService {
 
 
 
-    UserShortDto getUserById(Long userId);
+    UserShortDto getUserProfileById(Long userId);
 
     UserShortDto partialUpdateUserProfileById(Long userId, UserUpdateRequest updateRequest);
 
@@ -20,7 +18,7 @@ public interface UserService {
 
     List<UserShortDto> getAllUsers();
 
-    void passwordUpdateByUserId(Long userId, PasswordUpdateRequest passwordUpdateRequest);
+    void passwordUpdateByUserIdForCurrentUser(Long userId, PasswordUpdateRequest passwordUpdateRequest);
 
     List<UserFullDto> searchUsers(UserSearchFilter filter);
 
@@ -36,4 +34,5 @@ public interface UserService {
 
     void validateUsernameIsFree(String username);
     void validateEmailIsFree(String email);
+    void setUserPasswordById(Long userId, String newPassword);
 }

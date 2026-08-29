@@ -5,21 +5,23 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<User,Long>, JpaSpecificationExecutor<User> {
+public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
     @EntityGraph(attributePaths = "roles")
     Optional<User> findByUsername(String username);
+
     boolean existsByUsername(String username);
+
     boolean existsByEmail(String email);
 
 
     List<User> findAll();
-
 
     @EntityGraph(attributePaths = "roles")
     @Query("Select u FROM User u")
@@ -28,7 +30,14 @@ public interface UserRepository extends JpaRepository<User,Long>, JpaSpecificati
     @EntityGraph(attributePaths = "roles")
     Optional<User> findWithRolesById(Long userId);
 
-    default User findUserByIdOrThrow404(Long userId){
-        return findWithRolesById(userId).orElseThrow(()->new UserNotFoundException(userId));
+    @EntityGraph(attributePaths = "roles")
+    Optional<User> findWithRolesByEmail(String email);
+
+    @EntityGraph(attributePaths = "roles")
+    @Query("select u from User u where u.username = :login or u.email= :login")
+    Optional<User> findByUsernameOrEmail(@Param("login") String login);
+
+    default User findUserByIdOrThrow404(Long userId) {
+        return findWithRolesById(userId).orElseThrow(() -> new UserNotFoundException(userId));
     }
 }

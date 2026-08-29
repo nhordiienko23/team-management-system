@@ -7,7 +7,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +20,20 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
+    public void validateUsernameIsFree(String username) {
+        if (userRepository.existsByUsername(username)) {
+            throw new InvalidUserDataException("User with username " + username + " already exists");
+        }
+    }
+
+    @Override
+    public void validateEmailIsFree(String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw new InvalidUserDataException("User with email " + email + " already exists");
+        }
+    }
+
+    @Override
     public User getUserByUsername(String username) {
         return userRepository.findByUsername(username).orElseThrow(() ->
                 new InvalidUserDataException("User with username " + username + " not found"));
@@ -24,7 +41,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserShortDto saveToDataBase(User user) {
+    public UserShortDto saveToDataBaseAndReturnDto(User user) {
         User savedUser = userRepository.save(user);
         return userMapper.toUserShortDto(savedUser);
     }
@@ -32,6 +49,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean existsByUsername(String username) {
         return userRepository.existsByUsername(username);
+    }
+    @Override
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
     }
 
     @Override
@@ -45,19 +66,13 @@ public class UserServiceImpl implements UserService {
     public UserShortDto partialUpdateUserProfileById(Long userId, UserUpdateRequest request) {
         User user = userRepository.findUserByIdOrThrow404(userId);
 
-        if (request.username() != null) {
-            if (!user.getUsername().equals(request.username()) && userRepository.existsByUsername(request.username())) {
-                throw new InvalidUserDataException(
-                        "User with teamName " + request.username() + " already exists");
-            }
+        if (request.username() != null && !user.getUsername().equals(request.username())) {
+            validateUsernameIsFree(request.username());
             user.setUsername(request.username());
         }
 
-        if (request.email() != null) {
-            if (!user.getEmail().equals(request.email()) && userRepository.existsByEmail(request.email())) {
-                throw new InvalidUserDataException(
-                        "User with email " + request.email() + " already exists");
-            }
+        if (request.email() != null && !user.getEmail().equals(request.email())) {
+            validateEmailIsFree(request.email());
             user.setEmail(request.email());
         }
         return userMapper.toUserShortDto(user);
@@ -83,17 +98,21 @@ public class UserServiceImpl implements UserService {
 
         User user = userRepository.findUserByIdOrThrow404(userId);
 
-        if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
-            throw new InvalidUserDataException("Current password is incorrect");
-        }
+        boolean hasRealPassword = user.getPassword() != null && user.getPassword().startsWith("$2");
 
-        if (passwordEncoder.matches(request.newPassword(), user.getPassword())) {
-            throw new InvalidUserDataException("The new password must be different from the current password");
-        }
+        if (hasRealPassword) {
+            if (request.currentPassword() == null) {
+                throw new InvalidUserDataException("Current password is required");
+            }
+            if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
+                throw new InvalidUserDataException("Current password is incorrect");
+            }
 
-        user.setPassword(
-                passwordEncoder.encode(request.newPassword())
-        );
+            if (passwordEncoder.matches(request.newPassword(), user.getPassword())) {
+                throw new InvalidUserDataException("The new password must be different from the current password");
+            }
+        }
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
     }
 
 
@@ -108,12 +127,46 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserShortDto createUserAccount(UserCreationRequest request) {
-        if (userRepository.existsByUsername(request.username()))
-            throw new InvalidUserDataException("User with name " + request.username() + " already exists");
-        if (userRepository.existsByEmail(request.email()))
-            throw new InvalidUserDataException("User with email " + request.email() + " already exists");
+        validateUsernameIsFree(request.username());
+        validateEmailIsFree(request.email());
         User newUser = userMapper.toUserEntity(request);
         return userMapper.toUserShortDto(userRepository.save(newUser));
+    }
+
+    @Override
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findWithRolesByEmail(email);
+    }
+
+    @Override
+    public User saveToDatabase(User user) {
+        return userRepository.save(user);
+    }
+
+    @Override
+    public User createOAuth2User(String username, String email) {
+        String uniqueUsername = username;
+
+        if (existsByUsername(username)) {
+            String shortUuid = java.util.UUID.randomUUID().toString().substring(0, 5);
+            uniqueUsername = username + "_" + shortUuid;
+        }
+
+        User newUser = User.builder()
+                .username(uniqueUsername)
+                .email(email)
+                .password(java.util.UUID.randomUUID().toString())
+                .roles(Set.of(UserRole.ROLE_USER))
+                .registerAt(LocalDateTime.now())
+                .build();
+
+        return saveToDatabase(newUser);
+    }
+
+    @Override
+    public User findByUsernameOrEmail(String login) {
+        return userRepository.findByUsernameOrEmail(login)
+                .orElseThrow(() -> new InvalidUserDataException("User not found with login/email: " + login));
     }
 
 

@@ -28,3 +28,5 @@ target/
 .mvn/
 mvnw
 mvnw.cmd
+
+oauth2VM.txt

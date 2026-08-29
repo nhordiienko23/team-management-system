@@ -17,9 +17,9 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public UserShortDto register(RegisterRequest registerRequest) {
-        if (userService.existsByUsername(registerRequest.username()))
-            throw new UserInvalidDataException("User with teamName " + registerRequest.username() + " already exist");
+        userService.validateUsernameIsFree(registerRequest.username());
+        userService.validateEmailIsFree(registerRequest.email());
         User newUser = authMapper.toUserEntity(registerRequest);
-        return userService.saveToDataBase(newUser);
+        return userService.saveToDataBaseAndReturnDto(newUser);
     }
 }

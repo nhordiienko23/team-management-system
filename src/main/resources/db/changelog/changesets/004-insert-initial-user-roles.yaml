@@ -1,0 +1,22 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-insert-initial-user-roles
+      author: Nikita Hordiienko
+      changes:
+        - insert:
+            tableName: user_roles
+            columns:
+              - column: { name: user_id, valueNumeric: 1 }
+              - column: { name: roles, value: "ROLE_ADMIN" }
+
+        - insert:
+            tableName: user_roles
+            columns:
+              - column: { name: user_id, valueNumeric: 1 }
+              - column: { name: roles, value: "ROLE_USER" }
+
+        - insert:
+            tableName: user_roles
+            columns:
+              - column: { name: user_id, valueNumeric: 2 }
+              - column: { name: roles, value: "ROLE_USER" }

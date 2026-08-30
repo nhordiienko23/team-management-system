@@ -1,0 +1,292 @@
+databaseChangeLog:
+  - changeSet:
+      id: 010-insert-initial-coaches
+      author: Nikita Hordiienko
+      changes:
+        # --- Los Angeles Lakers (team_id: 1) ---
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "Pat" }
+              - column: { name: last_name, value: "Riley" }
+              - column: { name: salary, valueNumeric: 8000000 }
+              - column: { name: team_id, valueNumeric: 1 }
+              - column: { name: championships_won, valueNumeric: 4 }
+              - column: { name: years_of_experience, valueNumeric: 24 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "Frank" }
+              - column: { name: last_name, value: "Vogel" }
+              - column: { name: salary, valueNumeric: 4000000 }
+              - column: { name: team_id, valueNumeric: 1 }
+              - column: { name: championships_won, valueNumeric: 1 }
+              - column: { name: years_of_experience, valueNumeric: 12 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "Luke" }
+              - column: { name: last_name, value: "Walton" }
+              - column: { name: salary, valueNumeric: 3000000 }
+              - column: { name: team_id, valueNumeric: 1 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: years_of_experience, valueNumeric: 6 }
+
+        # --- Chicago Bulls (team_id: 2) ---
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "Phil" }
+              - column: { name: last_name, value: "Jackson" }
+              - column: { name: salary, valueNumeric: 10000000 }
+              - column: { name: team_id, valueNumeric: 2 }
+              - column: { name: championships_won, valueNumeric: 6 }
+              - column: { name: years_of_experience, valueNumeric: 20 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "Doug" }
+              - column: { name: last_name, value: "Collins" }
+              - column: { name: salary, valueNumeric: 4500000 }
+              - column: { name: team_id, valueNumeric: 2 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: years_of_experience, valueNumeric: 11 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "Billy" }
+              - column: { name: last_name, value: "Donovan" }
+              - column: { name: salary, valueNumeric: 6000000 }
+              - column: { name: team_id, valueNumeric: 2 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: years_of_experience, valueNumeric: 9 }
+
+        # --- Golden State Warriors (team_id: 3) ---
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "Steve" }
+              - column: { name: last_name, value: "Kerr" }
+              - column: { name: salary, valueNumeric: 17500000 }
+              - column: { name: team_id, valueNumeric: 3 }
+              - column: { name: championships_won, valueNumeric: 4 }
+              - column: { name: years_of_experience, valueNumeric: 10 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "Don" }
+              - column: { name: last_name, value: "Nelson" }
+              - column: { name: salary, valueNumeric: 6000000 }
+              - column: { name: team_id, valueNumeric: 3 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: years_of_experience, valueNumeric: 31 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "Mark" }
+              - column: { name: last_name, value: "Jackson" }
+              - column: { name: salary, valueNumeric: 3500000 }
+              - column: { name: team_id, valueNumeric: 3 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: years_of_experience, valueNumeric: 3 }
+
+        # --- Minnesota Timberwolves (team_id: 4) ---
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "Flip" }
+              - column: { name: last_name, value: "Saunders" }
+              - column: { name: salary, valueNumeric: 5000000 }
+              - column: { name: team_id, valueNumeric: 4 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: years_of_experience, valueNumeric: 17 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "Chris" }
+              - column: { name: last_name, value: "Finch" }
+              - column: { name: salary, valueNumeric: 4000000 }
+              - column: { name: team_id, valueNumeric: 4 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: years_of_experience, valueNumeric: 4 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "Ryan" }
+              - column: { name: last_name, value: "Saunders" }
+              - column: { name: salary, valueNumeric: 2000000 }
+              - column: { name: team_id, valueNumeric: 4 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: years_of_experience, valueNumeric: 3 }
+
+        # --- Boston Celtics (team_id: 5) ---
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "Red" }
+              - column: { name: last_name, value: "Auerbach" }
+              - column: { name: salary, valueNumeric: 5000000 }
+              - column: { name: team_id, valueNumeric: 5 }
+              - column: { name: championships_won, valueNumeric: 9 }
+              - column: { name: years_of_experience, valueNumeric: 20 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "Doc" }
+              - column: { name: last_name, value: "Rivers" }
+              - column: { name: salary, valueNumeric: 8000000 }
+              - column: { name: team_id, valueNumeric: 5 }
+              - column: { name: championships_won, valueNumeric: 1 }
+              - column: { name: years_of_experience, valueNumeric: 24 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "Brad" }
+              - column: { name: last_name, value: "Stevens" }
+              - column: { name: salary, valueNumeric: 7000000 }
+              - column: { name: team_id, valueNumeric: 5 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: years_of_experience, valueNumeric: 8 }
+
+        # --- Cleveland Cavaliers (team_id: 6) ---
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "Tyronn" }
+              - column: { name: last_name, value: "Lue" }
+              - column: { name: salary, valueNumeric: 7000000 }
+              - column: { name: team_id, valueNumeric: 6 }
+              - column: { name: championships_won, valueNumeric: 1 }
+              - column: { name: years_of_experience, valueNumeric: 8 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "Mike" }
+              - column: { name: last_name, value: "Brown" }
+              - column: { name: salary, valueNumeric: 5000000 }
+              - column: { name: team_id, valueNumeric: 6 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: years_of_experience, valueNumeric: 10 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "J.B." }
+              - column: { name: last_name, value: "Bickerstaff" }
+              - column: { name: salary, valueNumeric: 4500000 }
+              - column: { name: team_id, valueNumeric: 6 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: years_of_experience, valueNumeric: 7 }
+
+        # --- Miami Heat (team_id: 7) ---
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "Erik" }
+              - column: { name: last_name, value: "Spoelstra" }
+              - column: { name: salary, valueNumeric: 15000000 }
+              - column: { name: team_id, valueNumeric: 7 }
+              - column: { name: championships_won, valueNumeric: 2 }
+              - column: { name: years_of_experience, valueNumeric: 16 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "Stan" }
+              - column: { name: last_name, value: "Van Gundy" }
+              - column: { name: salary, valueNumeric: 5000000 }
+              - column: { name: team_id, valueNumeric: 7 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: years_of_experience, valueNumeric: 13 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "Ron" }
+              - column: { name: last_name, value: "Rothstein" }
+              - column: { name: salary, valueNumeric: 2500000 }
+              - column: { name: team_id, valueNumeric: 7 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: years_of_experience, valueNumeric: 5 }
+
+        # --- Philadelphia 76ers (team_id: 8) ---
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "Larry" }
+              - column: { name: last_name, value: "Brown" }
+              - column: { name: salary, valueNumeric: 7000000 }
+              - column: { name: team_id, valueNumeric: 8 }
+              - column: { name: championships_won, valueNumeric: 1 }
+              - column: { name: years_of_experience, valueNumeric: 26 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "Brett" }
+              - column: { name: last_name, value: "Brown" }
+              - column: { name: salary, valueNumeric: 4000000 }
+              - column: { name: team_id, valueNumeric: 8 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: years_of_experience, valueNumeric: 7 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "Nick" }
+              - column: { name: last_name, value: "Nurse" }
+              - column: { name: salary, valueNumeric: 8000000 }
+              - column: { name: team_id, valueNumeric: 8 }
+              - column: { name: championships_won, valueNumeric: 1 }
+              - column: { name: years_of_experience, valueNumeric: 6 }
+
+        # --- New York Knicks (team_id: 9) ---
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "Red" }
+              - column: { name: last_name, value: "Holzman" }
+              - column: { name: salary, valueNumeric: 3000000 }
+              - column: { name: team_id, valueNumeric: 9 }
+              - column: { name: championships_won, valueNumeric: 2 }
+              - column: { name: years_of_experience, valueNumeric: 18 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "Jeff" }
+              - column: { name: last_name, value: "Van Gundy" }
+              - column: { name: salary, valueNumeric: 5000000 }
+              - column: { name: team_id, valueNumeric: 9 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: years_of_experience, valueNumeric: 11 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "COACH" }
+              - column: { name: first_name, value: "Mike" }
+              - column: { name: last_name, value: "D'Antoni" }
+              - column: { name: salary, valueNumeric: 6000000 }
+              - column: { name: team_id, valueNumeric: 9 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: years_of_experience, valueNumeric: 16 }

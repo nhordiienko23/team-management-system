@@ -1,0 +1,26 @@
+databaseChangeLog:
+  - changeSet:
+      id: 008-create-player-positions-table
+      author: Nikita Hordiienko
+      changes:
+          - createTable:
+              tableName: player_positions
+              columns:
+                - column:
+                    name: player_id
+                    type: BIGINT
+                    constraints:
+                      nullable: false
+                - column:
+                    name: player_positions
+                    type: VARCHAR(50)
+                    constraints:
+                      nullable: false
+
+          - addForeignKeyConstraint:
+              baseTableName: player_positions
+              baseColumnNames: player_id
+              constraintName: fk_player_positions_player_id
+              referencedTableName: team_members
+              referencedColumnNames: id
+              onDelete: CASCADE

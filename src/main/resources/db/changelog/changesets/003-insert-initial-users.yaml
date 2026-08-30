@@ -1,0 +1,39 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-insert-initial-users
+      author: Nikita Hordiienko
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: username
+                  value: "q"
+              - column:
+                  name: email
+                  value: "q@gmail.com"
+              - column:
+                  # Это BCrypt хеш для буквы "q"
+                  name: password
+                  value: "$2a$10$q5Uoh0V3J0aGQwk21eJjp.qJkuOLtRK9PJEb2HBGumeMZsfCe5mLi"
+              - column:
+                  name: registered_at
+                  valueDate: "2026-08-30T10:05:00"
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: username
+                  value: "w"
+              - column:
+                  name: email
+                  value: "w@w.com"
+              - column:
+                  name: password
+                  # Это BCrypt хеш для буквы "w"
+                  value: "$2a$10$qfWuY649NiaMAz774C.wheShz4JfXWVJ/ecekTF8pYtP.eni8DwuS"
+              - column:
+                  name: registered_at
+                  valueDate: "2026-08-30T11:05:00"
+
+

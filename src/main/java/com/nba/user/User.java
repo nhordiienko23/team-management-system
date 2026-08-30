@@ -3,8 +3,6 @@ package com.nba.user;
 import jakarta.persistence.*;
 import lombok.*;
 
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -34,7 +32,7 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
-    private LocalDateTime registerAt;
+    private LocalDateTime registeredAt;
     private LocalDateTime lastLogin;
 
 }

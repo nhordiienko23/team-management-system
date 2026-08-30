@@ -155,7 +155,7 @@ public class UserServiceImpl implements UserService {
                 .email(email)
                 .password(java.util.UUID.randomUUID().toString())
                 .roles(Set.of(UserRole.ROLE_USER))
-                .registerAt(LocalDateTime.now())
+                .registeredAt(LocalDateTime.now())
                 .build();
 
         return saveToDatabase(newUser);

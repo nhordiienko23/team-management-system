@@ -1,0 +1,62 @@
+databaseChangeLog:
+  - changeSet:
+      id: 007-create-team-members-table
+      author: Nikita Hordiienko
+      changes:
+
+        - createTable:
+
+            tableName: team_members
+            columns:
+
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: team_member_role
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: first_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: salary
+                  type: DECIMAL(19, 2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: team_id
+                  type: BIGINT
+              - column:
+                  name: championships_won
+                  type: INT
+
+
+              - column:
+                  name: years_of_experience
+                  type: INT
+
+              - column:
+                  name: rating
+                  type: INT
+
+        - addForeignKeyConstraint:
+            baseTableName: team_members
+            baseColumnNames: team_id
+            constraintName: fk_team_members_team_id
+            referencedTableName: teams
+            referencedColumnNames: id
+            onDelete: SET NULL
+

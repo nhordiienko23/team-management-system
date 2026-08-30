@@ -11,6 +11,10 @@ public record RequestTeamDto(
 
         @NotNull(message = "Championships count is required")
         @Min(value = 0, message = "Championships Won cannot be negative")
-        Integer championshipCount
+        Integer championshipCount,
+
+        @NotNull(message = "Creation year is required")
+        @Min(value = 0, message = "Creation Year cannot be negative")
+        Integer creationYear
 ) {
 }

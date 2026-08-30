@@ -1,0 +1,67 @@
+databaseChangeLog:
+  - changeSet:
+      id: 006-insert-initial-teams
+      author: Nikita Hordiienko
+      changes:
+        - insert:
+            tableName: teams
+            columns:
+              - column: { name: name, value: "Los Angeles Lakers" }
+              - column: { name: creation_year, valueDate: "1947" }
+              - column: { name: championship_title_count, valueNumeric: 17 }
+
+        - insert:
+            tableName: teams
+            columns:
+              - column: { name: name, value: "Chicago Bulls" }
+              - column: { name: creation_year, valueDate: "1966" }
+              - column: { name: championship_title_count, valueNumeric: 6 }
+
+        - insert:
+            tableName: teams
+            columns:
+              - column: { name: name, value: "Golden State Warriors" }
+              - column: { name: creation_year, valueDate: "1946" }
+              - column: { name: championship_title_count, valueNumeric: 7 }
+
+        - insert:
+            tableName: teams
+            columns:
+              - column: { name: name, value: "Minnesota Timberwolves" }
+              - column: { name: creation_year, valueDate: "1989" }
+              - column: { name: championship_title_count, valueNumeric: 0 }
+
+        - insert:
+            tableName: teams
+            columns:
+              - column: { name: name, value: "Boston Celtics" }
+              - column: { name: creation_year, valueDate: "1946" }
+              - column: { name: championship_title_count, valueNumeric: 18 }
+
+        - insert:
+            tableName: teams
+            columns:
+              - column: { name: name, value: "Cleveland Cavaliers" }
+              - column: { name: creation_year, valueDate: "1970" }
+              - column: { name: championship_title_count, valueNumeric: 1 }
+
+        - insert:
+            tableName: teams
+            columns:
+              - column: { name: name, value: "Miami Heat" }
+              - column: { name: creation_year, valueDate: "1988" }
+              - column: { name: championship_title_count, valueNumeric: 3 }
+
+        - insert:
+            tableName: teams
+            columns:
+              - column: { name: name, value: "Philadelphia 76ers" }
+              - column: { name: creation_year, valueDate: "1946" }
+              - column: { name: championship_title_count, valueNumeric: 3 }
+
+        - insert:
+            tableName: teams
+            columns:
+              - column: { name: name, value: "New York Knicks" }
+              - column: { name: creation_year, valueDate: "1946" }
+              - column: { name: championship_title_count, valueNumeric: 2 }

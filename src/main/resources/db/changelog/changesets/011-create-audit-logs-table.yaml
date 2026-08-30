@@ -1,0 +1,36 @@
+databaseChangeLog:
+  - changeSet:
+      id: 011-create-audit-logs-table
+      author: Nikita Hordiienko
+      changes:
+        - createTable:
+            tableName: audit_logs
+            columns:
+              - column:
+                  name: id
+                  type: INT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: method_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: arguments
+                  type: TEXT
+              - column:
+                  name: status
+                  type: VARCHAR(50) 
+                  constraints:
+                    nullable: false
+              - column:
+                  name: error_message
+                  type: TEXT
+              - column:
+                  name: timestamp
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false

@@ -1,0 +1,652 @@
+databaseChangeLog:
+  - changeSet:
+      id: 009-insert-initial-players
+      author: Nikita Hordiienko
+      changes:
+        # --- Los Angeles Lakers (team_id: 1) ---
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "LeBron" }
+              - column: { name: last_name, value: "James" }
+              - column: { name: salary, valueNumeric: 47607350 }
+              - column: { name: team_id, valueNumeric: 1 }
+              - column: { name: championships_won, valueNumeric: 4 }
+              - column: { name: rating, valueNumeric: 96 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Kobe" }
+              - column: { name: last_name, value: "Bryant" }
+              - column: { name: salary, valueNumeric: 25000000 }
+              - column: { name: team_id, valueNumeric: 1 }
+              - column: { name: championships_won, valueNumeric: 5 }
+              - column: { name: rating, valueNumeric: 98 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Shaquille" }
+              - column: { name: last_name, value: "O'Neal" }
+              - column: { name: salary, valueNumeric: 27696430 }
+              - column: { name: team_id, valueNumeric: 1 }
+              - column: { name: championships_won, valueNumeric: 4 }
+              - column: { name: rating, valueNumeric: 98 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Magic" }
+              - column: { name: last_name, value: "Johnson" }
+              - column: { name: salary, valueNumeric: 3100000 }
+              - column: { name: team_id, valueNumeric: 1 }
+              - column: { name: championships_won, valueNumeric: 5 }
+              - column: { name: rating, valueNumeric: 99 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Kareem" }
+              - column: { name: last_name, value: "Abdul-Jabbar" }
+              - column: { name: salary, valueNumeric: 3000000 }
+              - column: { name: team_id, valueNumeric: 1 }
+              - column: { name: championships_won, valueNumeric: 6 }
+              - column: { name: rating, valueNumeric: 99 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Anthony" }
+              - column: { name: last_name, value: "Davis" }
+              - column: { name: salary, valueNumeric: 40600080 }
+              - column: { name: team_id, valueNumeric: 1 }
+              - column: { name: championships_won, valueNumeric: 1 }
+              - column: { name: rating, valueNumeric: 94 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Pau" }
+              - column: { name: last_name, value: "Gasol" }
+              - column: { name: salary, valueNumeric: 19000000 }
+              - column: { name: team_id, valueNumeric: 1 }
+              - column: { name: championships_won, valueNumeric: 2 }
+              - column: { name: rating, valueNumeric: 89 }
+
+        # --- Chicago Bulls (team_id: 2) ---
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Michael" }
+              - column: { name: last_name, value: "Jordan" }
+              - column: { name: salary, valueNumeric: 33140000 }
+              - column: { name: team_id, valueNumeric: 2 }
+              - column: { name: championships_won, valueNumeric: 6 }
+              - column: { name: rating, valueNumeric: 99 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Scottie" }
+              - column: { name: last_name, value: "Pippen" }
+              - column: { name: salary, valueNumeric: 2775000 }
+              - column: { name: team_id, valueNumeric: 2 }
+              - column: { name: championships_won, valueNumeric: 6 }
+              - column: { name: rating, valueNumeric: 94 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Dennis" }
+              - column: { name: last_name, value: "Rodman" }
+              - column: { name: salary, valueNumeric: 9000000 }
+              - column: { name: team_id, valueNumeric: 2 }
+              - column: { name: championships_won, valueNumeric: 5 }
+              - column: { name: rating, valueNumeric: 88 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Derrick" }
+              - column: { name: last_name, value: "Rose" }
+              - column: { name: salary, valueNumeric: 18862876 }
+              - column: { name: team_id, valueNumeric: 2 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: rating, valueNumeric: 93 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "DeMar" }
+              - column: { name: last_name, value: "DeRozan" }
+              - column: { name: salary, valueNumeric: 28600000 }
+              - column: { name: team_id, valueNumeric: 2 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: rating, valueNumeric: 88 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Zach" }
+              - column: { name: last_name, value: "LaVine" }
+              - column: { name: salary, valueNumeric: 40064220 }
+              - column: { name: team_id, valueNumeric: 2 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: rating, valueNumeric: 87 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Joakim" }
+              - column: { name: last_name, value: "Noah" }
+              - column: { name: salary, valueNumeric: 12200000 }
+              - column: { name: team_id, valueNumeric: 2 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: rating, valueNumeric: 86 }
+
+        # --- Golden State Warriors (team_id: 3) ---
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Stephen" }
+              - column: { name: last_name, value: "Curry" }
+              - column: { name: salary, valueNumeric: 51915615 }
+              - column: { name: team_id, valueNumeric: 3 }
+              - column: { name: championships_won, valueNumeric: 4 }
+              - column: { name: rating, valueNumeric: 96 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Klay" }
+              - column: { name: last_name, value: "Thompson" }
+              - column: { name: salary, valueNumeric: 43219440 }
+              - column: { name: team_id, valueNumeric: 3 }
+              - column: { name: championships_won, valueNumeric: 4 }
+              - column: { name: rating, valueNumeric: 88 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Draymond" }
+              - column: { name: last_name, value: "Green" }
+              - column: { name: salary, valueNumeric: 22321429 }
+              - column: { name: team_id, valueNumeric: 3 }
+              - column: { name: championships_won, valueNumeric: 4 }
+              - column: { name: rating, valueNumeric: 87 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Kevin" }
+              - column: { name: last_name, value: "Durant" }
+              - column: { name: salary, valueNumeric: 30000000 }
+              - column: { name: team_id, valueNumeric: 3 }
+              - column: { name: championships_won, valueNumeric: 2 }
+              - column: { name: rating, valueNumeric: 97 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Andre" }
+              - column: { name: last_name, value: "Iguodala" }
+              - column: { name: salary, valueNumeric: 14814815 }
+              - column: { name: team_id, valueNumeric: 3 }
+              - column: { name: championships_won, valueNumeric: 4 }
+              - column: { name: rating, valueNumeric: 83 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Wilt" }
+              - column: { name: last_name, value: "Chamberlain" }
+              - column: { name: salary, valueNumeric: 250000 }
+              - column: { name: team_id, valueNumeric: 3 }
+              - column: { name: championships_won, valueNumeric: 2 }
+              - column: { name: rating, valueNumeric: 99 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Rick" }
+              - column: { name: last_name, value: "Barry" }
+              - column: { name: salary, valueNumeric: 500000 }
+              - column: { name: team_id, valueNumeric: 3 }
+              - column: { name: championships_won, valueNumeric: 1 }
+              - column: { name: rating, valueNumeric: 91 }
+
+        # --- Minnesota Timberwolves (team_id: 4) ---
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Kevin" }
+              - column: { name: last_name, value: "Garnett" }
+              - column: { name: salary, valueNumeric: 28000000 }
+              - column: { name: team_id, valueNumeric: 4 }
+              - column: { name: championships_won, valueNumeric: 1 }
+              - column: { name: rating, valueNumeric: 95 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Anthony" }
+              - column: { name: last_name, value: "Edwards" }
+              - column: { name: salary, valueNumeric: 13534817 }
+              - column: { name: team_id, valueNumeric: 4 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: rating, valueNumeric: 90 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Karl-Anthony" }
+              - column: { name: last_name, value: "Towns" }
+              - column: { name: salary, valueNumeric: 36016200 }
+              - column: { name: team_id, valueNumeric: 4 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: rating, valueNumeric: 88 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Rudy" }
+              - column: { name: last_name, value: "Gobert" }
+              - column: { name: salary, valueNumeric: 41000000 }
+              - column: { name: team_id, valueNumeric: 4 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: rating, valueNumeric: 86 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Wally" }
+              - column: { name: last_name, value: "Szczerbiak" }
+              - column: { name: salary, valueNumeric: 10000000 }
+              - column: { name: team_id, valueNumeric: 4 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: rating, valueNumeric: 82 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Sam" }
+              - column: { name: last_name, value: "Cassell" }
+              - column: { name: salary, valueNumeric: 5500000 }
+              - column: { name: team_id, valueNumeric: 4 }
+              - column: { name: championships_won, valueNumeric: 3 }
+              - column: { name: rating, valueNumeric: 84 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Mike" }
+              - column: { name: last_name, value: "Conley" }
+              - column: { name: salary, valueNumeric: 24360000 }
+              - column: { name: team_id, valueNumeric: 4 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: rating, valueNumeric: 82 }
+
+        # --- Boston Celtics (team_id: 5) ---
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Larry" }
+              - column: { name: last_name, value: "Bird" }
+              - column: { name: salary, valueNumeric: 7000000 }
+              - column: { name: team_id, valueNumeric: 5 }
+              - column: { name: championships_won, valueNumeric: 3 }
+              - column: { name: rating, valueNumeric: 98 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Bill" }
+              - column: { name: last_name, value: "Russell" }
+              - column: { name: salary, valueNumeric: 100000 }
+              - column: { name: team_id, valueNumeric: 5 }
+              - column: { name: championships_won, valueNumeric: 11 }
+              - column: { name: rating, valueNumeric: 98 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Jayson" }
+              - column: { name: last_name, value: "Tatum" }
+              - column: { name: salary, valueNumeric: 32600060 }
+              - column: { name: team_id, valueNumeric: 5 }
+              - column: { name: championships_won, valueNumeric: 1 }
+              - column: { name: rating, valueNumeric: 95 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Jaylen" }
+              - column: { name: last_name, value: "Brown" }
+              - column: { name: salary, valueNumeric: 31830357 }
+              - column: { name: team_id, valueNumeric: 5 }
+              - column: { name: championships_won, valueNumeric: 1 }
+              - column: { name: rating, valueNumeric: 93 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Paul" }
+              - column: { name: last_name, value: "Pierce" }
+              - column: { name: salary, valueNumeric: 19790000 }
+              - column: { name: team_id, valueNumeric: 5 }
+              - column: { name: championships_won, valueNumeric: 1 }
+              - column: { name: rating, valueNumeric: 92 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Kevin" }
+              - column: { name: last_name, value: "McHale" }
+              - column: { name: salary, valueNumeric: 1400000 }
+              - column: { name: team_id, valueNumeric: 5 }
+              - column: { name: championships_won, valueNumeric: 3 }
+              - column: { name: rating, valueNumeric: 92 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Bob" }
+              - column: { name: last_name, value: "Cousy" }
+              - column: { name: salary, valueNumeric: 50000 }
+              - column: { name: team_id, valueNumeric: 5 }
+              - column: { name: championships_won, valueNumeric: 6 }
+              - column: { name: rating, valueNumeric: 91 }
+
+        # --- Cleveland Cavaliers (team_id: 6) ---
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Kyrie" }
+              - column: { name: last_name, value: "Irving" }
+              - column: { name: salary, valueNumeric: 17638063 }
+              - column: { name: team_id, valueNumeric: 6 }
+              - column: { name: championships_won, valueNumeric: 1 }
+              - column: { name: rating, valueNumeric: 91 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Donovan" }
+              - column: { name: last_name, value: "Mitchell" }
+              - column: { name: salary, valueNumeric: 33162030 }
+              - column: { name: team_id, valueNumeric: 6 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: rating, valueNumeric: 90 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Kevin" }
+              - column: { name: last_name, value: "Love" }
+              - column: { name: salary, valueNumeric: 24200000 }
+              - column: { name: team_id, valueNumeric: 6 }
+              - column: { name: championships_won, valueNumeric: 1 }
+              - column: { name: rating, valueNumeric: 87 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Mark" }
+              - column: { name: last_name, value: "Price" }
+              - column: { name: salary, valueNumeric: 2000000 }
+              - column: { name: team_id, valueNumeric: 6 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: rating, valueNumeric: 86 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Brad" }
+              - column: { name: last_name, value: "Daugherty" }
+              - column: { name: salary, valueNumeric: 2500000 }
+              - column: { name: team_id, valueNumeric: 6 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: rating, valueNumeric: 86 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Evan" }
+              - column: { name: last_name, value: "Mobley" }
+              - column: { name: salary, valueNumeric: 8882640 }
+              - column: { name: team_id, valueNumeric: 6 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: rating, valueNumeric: 85 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Darius" }
+              - column: { name: last_name, value: "Garland" }
+              - column: { name: salary, valueNumeric: 34005250 }
+              - column: { name: team_id, valueNumeric: 6 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: rating, valueNumeric: 85 }
+
+        # --- Miami Heat (team_id: 7) ---
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Dwyane" }
+              - column: { name: last_name, value: "Wade" }
+              - column: { name: salary, valueNumeric: 20000000 }
+              - column: { name: team_id, valueNumeric: 7 }
+              - column: { name: championships_won, valueNumeric: 3 }
+              - column: { name: rating, valueNumeric: 95 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Jimmy" }
+              - column: { name: last_name, value: "Butler" }
+              - column: { name: salary, valueNumeric: 45183960 }
+              - column: { name: team_id, valueNumeric: 7 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: rating, valueNumeric: 92 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Alonzo" }
+              - column: { name: last_name, value: "Mourning" }
+              - column: { name: salary, valueNumeric: 18700000 }
+              - column: { name: team_id, valueNumeric: 7 }
+              - column: { name: championships_won, valueNumeric: 1 }
+              - column: { name: rating, valueNumeric: 90 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Chris" }
+              - column: { name: last_name, value: "Bosh" }
+              - column: { name: salary, valueNumeric: 23741060 }
+              - column: { name: team_id, valueNumeric: 7 }
+              - column: { name: championships_won, valueNumeric: 2 }
+              - column: { name: rating, valueNumeric: 89 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Bam" }
+              - column: { name: last_name, value: "Adebayo" }
+              - column: { name: salary, valueNumeric: 32600060 }
+              - column: { name: team_id, valueNumeric: 7 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: rating, valueNumeric: 88 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Udonis" }
+              - column: { name: last_name, value: "Haslem" }
+              - column: { name: salary, valueNumeric: 4000000 }
+              - column: { name: team_id, valueNumeric: 7 }
+              - column: { name: championships_won, valueNumeric: 3 }
+              - column: { name: rating, valueNumeric: 78 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Tyler" }
+              - column: { name: last_name, value: "Herro" }
+              - column: { name: salary, valueNumeric: 27000000 }
+              - column: { name: team_id, valueNumeric: 7 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: rating, valueNumeric: 84 }
+
+        # --- Philadelphia 76ers (team_id: 8) ---
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Joel" }
+              - column: { name: last_name, value: "Embiid" }
+              - column: { name: salary, valueNumeric: 47607350 }
+              - column: { name: team_id, valueNumeric: 8 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: rating, valueNumeric: 96 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Allen" }
+              - column: { name: last_name, value: "Iverson" }
+              - column: { name: salary, valueNumeric: 14625000 }
+              - column: { name: team_id, valueNumeric: 8 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: rating, valueNumeric: 95 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Julius" }
+              - column: { name: last_name, value: "Erving" }
+              - column: { name: salary, valueNumeric: 1500000 }
+              - column: { name: team_id, valueNumeric: 8 }
+              - column: { name: championships_won, valueNumeric: 1 }
+              - column: { name: rating, valueNumeric: 95 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Charles" }
+              - column: { name: last_name, value: "Barkley" }
+              - column: { name: salary, valueNumeric: 4000000 }
+              - column: { name: team_id, valueNumeric: 8 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: rating, valueNumeric: 94 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Tyrese" }
+              - column: { name: last_name, value: "Maxey" }
+              - column: { name: salary, valueNumeric: 4343920 }
+              - column: { name: team_id, valueNumeric: 8 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: rating, valueNumeric: 89 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Hal" }
+              - column: { name: last_name, value: "Greer" }
+              - column: { name: salary, valueNumeric: 100000 }
+              - column: { name: team_id, valueNumeric: 8 }
+              - column: { name: championships_won, valueNumeric: 1 }
+              - column: { name: rating, valueNumeric: 90 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Maurice" }
+              - column: { name: last_name, value: "Cheeks" }
+              - column: { name: salary, valueNumeric: 600000 }
+              - column: { name: team_id, valueNumeric: 8 }
+              - column: { name: championships_won, valueNumeric: 1 }
+              - column: { name: rating, valueNumeric: 87 }
+
+        # --- New York Knicks (team_id: 9) ---
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Patrick" }
+              - column: { name: last_name, value: "Ewing" }
+              - column: { name: salary, valueNumeric: 18724000 }
+              - column: { name: team_id, valueNumeric: 9 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: rating, valueNumeric: 94 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Walt" }
+              - column: { name: last_name, value: "Frazier" }
+              - column: { name: salary, valueNumeric: 300000 }
+              - column: { name: team_id, valueNumeric: 9 }
+              - column: { name: championships_won, valueNumeric: 2 }
+              - column: { name: rating, valueNumeric: 93 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Willis" }
+              - column: { name: last_name, value: "Reed" }
+              - column: { name: salary, valueNumeric: 250000 }
+              - column: { name: team_id, valueNumeric: 9 }
+              - column: { name: championships_won, valueNumeric: 2 }
+              - column: { name: rating, valueNumeric: 92 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Jalen" }
+              - column: { name: last_name, value: "Brunson" }
+              - column: { name: salary, valueNumeric: 26346666 }
+              - column: { name: team_id, valueNumeric: 9 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: rating, valueNumeric: 91 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Carmelo" }
+              - column: { name: last_name, value: "Anthony" }
+              - column: { name: salary, valueNumeric: 24559380 }
+              - column: { name: team_id, valueNumeric: 9 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: rating, valueNumeric: 90 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "Julius" }
+              - column: { name: last_name, value: "Randle" }
+              - column: { name: salary, valueNumeric: 28226880 }
+              - column: { name: team_id, valueNumeric: 9 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: rating, valueNumeric: 87 }
+        - insert:
+            tableName: team_members
+            columns:
+              - column: { name: team_member_role, value: "PLAYER" }
+              - column: { name: first_name, value: "John" }
+              - column: { name: last_name, value: "Starks" }
+              - column: { name: salary, valueNumeric: 4000000 }
+              - column: { name: team_id, valueNumeric: 9 }
+              - column: { name: championships_won, valueNumeric: 0 }
+              - column: { name: rating, valueNumeric: 83 }

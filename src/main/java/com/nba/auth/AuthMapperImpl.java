@@ -21,7 +21,7 @@ public class AuthMapperImpl implements AuthMapper{
                 .password(passwordEncoder.encode(registerRequest.password()))
                 .roles(Set.of(UserRole.ROLE_USER))
                 .email(registerRequest.email())
-                .registerAt(LocalDateTime.now())
+                .registeredAt(LocalDateTime.now())
                 .build();
     }
 }

@@ -31,7 +31,7 @@ public class UserMapperImpl implements UserMapper {
                 .roles(user.getRoles().stream()
                         .map(UserRole::name)
                         .toList())
-                .registeredAt(user.getRegisterAt().toString())
+                .registeredAt(user.getRegisteredAt().toString())
                 .lastLogin((user.getLastLogin() != null)
                         ? user.getLastLogin().toString()
                         : null)
@@ -45,7 +45,7 @@ public class UserMapperImpl implements UserMapper {
                 .password(passwordEncoder.encode(request.password()))
                 .email(request.email())
                 .roles(request.roles())
-                .registerAt(LocalDateTime.now())
+                .registeredAt(LocalDateTime.now())
                 .build();
     }
 

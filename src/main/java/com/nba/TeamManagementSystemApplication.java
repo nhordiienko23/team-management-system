@@ -9,10 +9,10 @@ import java.util.TimeZone;
 
 @SpringBootApplication
 @EnableCaching
-public class NbaScoutSystemApplication{
+public class TeamManagementSystemApplication {
     public static void main(String[] args) {
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
-        SpringApplication.run(NbaScoutSystemApplication.class, args);
+        SpringApplication.run(TeamManagementSystemApplication.class, args);
     }
 
 

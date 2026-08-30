@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -38,7 +39,12 @@ public class GlobalExceptionHandler {
     private final AuditLogService auditLogService;
 
     // --- CUSTOM EXCEPTIONS ---
-
+    @ExceptionHandler(PropertyReferenceException.class)
+    public ResponseEntity<ErrorResponse> handlePropertyReferenceException(PropertyReferenceException ex) {
+        String message = String.format("Invalid property reference: '%s' is not a valid property of the requested resource.", ex.getPropertyName());
+        logger.warn("Property reference error: {}", message);
+        return buildResponse(HttpStatus.BAD_REQUEST, "Bad Request", message);
+    }
     @ExceptionHandler({InvalidDataException.class})
     public ResponseEntity<ErrorResponse> handleInvalidData(InvalidDataException ex) {
         return buildResponse(HttpStatus.BAD_REQUEST, "Bad Request", ex.getMessage());

@@ -23,7 +23,7 @@ class TeamMapperImpl implements TeamMapper {
         return Team.builder()
                 .name(dto.name())
                 .championshipTitleCount(dto.championshipCount())
-                .creationDate(LocalDate.now())
+                .creationYear(dto.creationYear())
                 .teamMembers(new ArrayList<>())
                 .build();
     }
@@ -37,7 +37,7 @@ class TeamMapperImpl implements TeamMapper {
         return ResponseTeamDto.builder()
                 .id(team.getId())
                 .name(team.getName())
-                .creationDate(team.getCreationDate())
+                .creationYear(team.getCreationYear())
                 .coaches(team.getCoaches().stream()
                         .map(memberShortMapper::toMemberShortDto)
                         .toList())

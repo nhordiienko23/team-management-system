@@ -25,7 +25,7 @@ public class Team {
     @Column(unique = true, nullable = false)
     private String name;
     @Column(nullable = false)
-    private LocalDate creationDate;
+    private Integer creationYear;
     @Column(nullable = false)
     private Integer championshipTitleCount;
 

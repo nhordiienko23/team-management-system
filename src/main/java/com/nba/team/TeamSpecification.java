@@ -30,11 +30,11 @@ class TeamSpecification {
                 predicates.add(cb.lessThanOrEqualTo(root.get("championshipTitleCount"), filter.maxChampionshipTitleCount()));
             }
 
-            if (filter.creationDateStart() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("creationDate"), filter.creationDateStart()));
+            if (filter.minCreationYear() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("creationYear"), filter.minCreationYear()));
             }
-            if (filter.creationDateEnd() != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("creationDate"), filter.creationDateEnd()));
+            if (filter.maxCreationYear() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("creationYear"), filter.maxCreationYear()));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

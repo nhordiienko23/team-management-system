@@ -10,8 +10,6 @@ public interface UserService {
 
     UserShortDto saveToDataBaseAndReturnDto(User user);
 
-
-
     UserShortDto getUserProfileById(Long userId);
 
     UserShortDto partialUpdateUserProfileById(Long userId, UserUpdateRequest updateRequest);
@@ -37,4 +35,6 @@ public interface UserService {
     void validateUsernameIsFree(String username);
     void validateEmailIsFree(String email);
     void setUserPasswordById(Long userId, String newPassword);
+
+
 }

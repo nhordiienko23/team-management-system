@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
-    // Using a logger instead of ex.printStackTrace() for better log management
+
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     private final AuditLogService auditLogService;

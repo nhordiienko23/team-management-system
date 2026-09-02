@@ -1,5 +1,6 @@
 package com.nba.user;
 
+import com.nba.AbstractIntegrationTest;
 import com.nba.core.exception.invalidData.InvalidUserDataException;
 import com.nba.core.exception.notFound.UserNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -10,27 +11,21 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TimeZone;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
-@Testcontainers
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
-public class UserServiceIntegrationTest {
+public class UserServiceIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private UserService userService;
 
@@ -40,22 +35,7 @@ public class UserServiceIntegrationTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    static {
-        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
-    }
 
-    @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16")
-            .withDatabaseName("test_db")
-            .withUsername("test")
-            .withPassword("test");
-
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-    }
 
     @Test
     void shouldCreateUserAccount() {

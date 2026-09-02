@@ -437,10 +437,7 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
         );
     }
 
-    private User createAndSaveUserToDatabase(
-            String username,
-            String email
-    ) {
+    private User createAndSaveUserToDatabase(String username, String email) {
         User user = User.builder()
                 .username(username)
                 .password(passwordEncoder.encode("password"))

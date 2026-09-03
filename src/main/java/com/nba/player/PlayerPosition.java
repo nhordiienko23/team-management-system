@@ -2,7 +2,7 @@ package com.nba.player;
 
 import java.util.List;
 
- enum PlayerPosition {
+ public enum PlayerPosition {
     PG("Point Guard"),
     SG("Shooting Guard"),
     SF("Small Forward"),

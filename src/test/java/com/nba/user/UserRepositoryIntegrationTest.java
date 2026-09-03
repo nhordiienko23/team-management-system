@@ -5,6 +5,9 @@ import com.nba.core.exception.notFound.UserNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +30,26 @@ class UserRepositoryIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Test
+    void shouldFindAllUsersWithPagination() {
+
+        create3UsersAndSaveToDatabase();
+
+        long totalUsersInDb = userRepository.count();
+
+        int pageSize = 2;
+        Pageable pageable = PageRequest.of(0, pageSize);
+
+
+        Page<User> userPage = userRepository.findAll(pageable);
+
+
+        assertThat(userPage).isNotNull();
+        assertThat(userPage.getContent()).hasSize(pageSize);
+        assertThat(userPage.getTotalElements()).isEqualTo(totalUsersInDb);
+        assertThat(userPage.getNumber()).isZero();
+    }
 
     @Test
     void shouldReturnUserByUsernameWithRoles() {

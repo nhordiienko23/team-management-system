@@ -12,10 +12,7 @@ import java.util.List;
     public static Specification<Player> buildQuery(PlayerSearchFilter filter) {
         return (root, query, cb) -> {
 
-            if (Long.class != query.getResultType() && long.class != query.getResultType()) {
-                root.fetch("team", JoinType.LEFT);
-                root.fetch("playerPositions", JoinType.LEFT);
-            }
+
             query.distinct(true);
 
             List<Predicate> predicates = new ArrayList<>();

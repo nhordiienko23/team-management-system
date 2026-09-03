@@ -67,6 +67,10 @@ class TeamServiceImpl implements TeamService {
         if (request.championshipCount() != null) {
             team.setChampionshipTitleCount(request.championshipCount());
         }
+        if (request.creationYear() != null) {
+            team.setCreationYear(request.creationYear());
+        }
+
 
         return teamMapper.toTeamDto(team);
     }

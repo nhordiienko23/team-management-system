@@ -71,7 +71,7 @@ class CoachServiceImpl implements CoachService {
     @Override
     @Transactional(readOnly = true)
     public Page<ResponseCoachDto> getAllCoaches(Pageable pageable) {
-        Page <Coach> coachPage = coachRepository.findAll(pageable);
+        Page<Coach> coachPage = coachRepository.findAll(pageable);
         return coachPage.map(coachMapper::toCoachDto);
     }
 
@@ -83,8 +83,23 @@ class CoachServiceImpl implements CoachService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ResponseCoachDto> searchCoaches(CoachSearchFilter filter,Pageable pageable) {
-        return coachRepository.findAll(CoachSpecification.buildQuery(filter),pageable)
+    public Page<ResponseCoachDto> searchCoaches(CoachSearchFilter filter, Pageable pageable) {
+        if (filter == null) {
+            filter = new CoachSearchFilter(
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+            );
+        }
+
+        return coachRepository
+                .findAll(CoachSpecification.buildQuery(filter), pageable)
                 .map(coachMapper::toCoachDto);
     }
 

@@ -1,19 +1,19 @@
 # Team Management System
 
-A Spring Boot backend application for managing professional sports teams, player rosters, coaches, and users. Tthat allows users to manage teams and their rosters. The system includes OAuth2/OIDC authentication with role-based access control, Spring Data JPA Specifications for dynamic filtering, pagination, Liquibase database migrations, centralized exception handling, AOP-based audit logging, and integration testing with Testcontainers and PostgreSQL.
+A Spring Boot backend application for managing professional sports teams, players, coaches, and users. The REST API implements role-based access control, allowing administrators to manage teams, players, coaches, users, team rosters, and player/coach transfers, while regular users have read access to sports data and can manage their own profiles. Players and coaches can be retrieved both independently and through their associated teams, including rosters and coaching staff. The application also uses OAuth2/OIDC authentication, Spring Data JPA Specifications for dynamic filtering, pagination, Liquibase migrations, centralized exception handling, AOP-based audit logging, Swagger/OpenAPI, and integration testing with Testcontainers and PostgreSQL.
 
 ## 🚀 Key Features
 
-* **Team & Roster Management:** Manage teams and their members, view team rosters, retrieve players and coaches through their teams, or work with players and coaches separately.
-* **RESTful API & Pagination:** REST endpoints for managing teams, players, coaches, and users with server-side pagination using Pageable.
+* **Role-Based Access Control:** Separate Admin and User capabilities. Admins can create, update, and delete teams, players, coaches, and user accounts, manage team rosters, and perform player and coach transfers. Regular users have read access to team, player, and coach information and can manage their own profiles.
+* **Team & Roster Management:** Manage and view teams, team rosters, coaching staff, and team members. Players and coaches can also be retrieved independently from their associated teams.
+* **RESTful API & Pagination:** REST endpoints for managing teams, players, coaches, and users with server-side pagination using `Pageable`.
 * **Advanced Filtering & Search:** Dynamic filtering using Spring Data JPA Specifications, including criteria such as salary, experience, ratings, positions, and championships.
 * **Security & Authentication:** OAuth2/OIDC authentication with Google, GitHub, and a custom authorization server, combined with role-based access control for Admin and User operations.
 * **Audit Logging:** AOP-based logging and auditing of important application actions and method execution.
 * **Database Migrations:** Version-controlled database schema changes managed with Liquibase.
-* **API Documentation:** Interactive API documentation with Springdoc OpenAPI and Swagger UI.
-* **Centralized Exception Handling:** Global exception handling with @ControllerAdvice for consistent API error responses.
-* **API Documentation:** Integrated Springdoc OpenAPI (Swagger UI) for interactive API exploration and testing.
-* **Integration Testing:** Integration tests for controllers, services, and repositories using Spring Boot Test, Spring Security Test, Testcontainers, and PostgreSQL.
+* **Centralized Exception Handling:** Global exception handling with `@ControllerAdvice` for consistent API error responses.
+* **API Documentation:** Interactive API documentation and endpoint testing with Springdoc OpenAPI and Swagger UI.
+* **Integration Testing:** Integration tests for controllers, services, and repositories using JUnit 5, Spring Boot Test, Spring Security Test, Testcontainers, and PostgreSQL.
 * **Unit Testing:** Unit tests with JUnit 5 and Mockito for business logic, DTO validation, mappers, specifications, and exception handling.
 * **Dockerized Infrastructure:** Containerized application and database provisioning using Docker and Docker Compose.
 

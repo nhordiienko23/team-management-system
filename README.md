@@ -1,16 +1,20 @@
 # Team Management System
 
-A production-ready Spring Boot backend application designed for managing professional sports teams, player rosters, coaches, and users. Built with clean architecture principles, it provides a scalable REST API, secure OAuth2 authentication, reliable data persistence, and comprehensive audit logging.
+A Spring Boot backend application for managing professional sports teams, player rosters, coaches, and users. Tthat allows users to manage teams and their rosters. The system includes OAuth2/OIDC authentication with role-based access control, Spring Data JPA Specifications for dynamic filtering, pagination, Liquibase database migrations, centralized exception handling, AOP-based audit logging, and integration testing with Testcontainers and PostgreSQL.
 
 ## 🚀 Key Features
 
-* **Comprehensive Domain Management:** Full CRUD operations for Teams, Players, Coaches, and Users.
-* **Advanced Filtering & Search:** Server-side filtering using Spring Data JPA Specifications (e.g., by salary, experience, rankings, positions).
-* **Security & Authentication:** Robust OAuth2 and OIDC integration with role-based access control (differentiating between Admin and standard User operations).
-* **Audit Logging:** Centralized auditing mechanism to track system actions, modifications, and user activity.
-* **Database Migrations:** Version-controlled database schema management utilizing Liquibase.
-* **Centralized Exception Handling:** Unified global error handling using `@ControllerAdvice` to ensure clean and predictable API responses.
+* **Team & Roster Management:** Manage teams and their members, view team rosters, retrieve players and coaches through their teams, or work with players and coaches separately.
+* **RESTful API & Pagination:** REST endpoints for managing teams, players, coaches, and users with server-side pagination using Pageable.
+* **Advanced Filtering & Search:** Dynamic filtering using Spring Data JPA Specifications, including criteria such as salary, experience, ratings, positions, and championships.
+* **Security & Authentication:** OAuth2/OIDC authentication with Google, GitHub, and a custom authorization server, combined with role-based access control for Admin and User operations.
+* **Audit Logging:** AOP-based logging and auditing of important application actions and method execution.
+* **Database Migrations:** Version-controlled database schema changes managed with Liquibase.
+* **API Documentation:** Interactive API documentation with Springdoc OpenAPI and Swagger UI.
+* **Centralized Exception Handling:** Global exception handling with @ControllerAdvice for consistent API error responses.
 * **API Documentation:** Integrated Springdoc OpenAPI (Swagger UI) for interactive API exploration and testing.
+* **Integration Testing:** Integration tests for controllers, services, and repositories using Spring Boot Test, Spring Security Test, Testcontainers, and PostgreSQL.
+* **Unit Testing:** Unit tests with JUnit 5 and Mockito for business logic, DTO validation, mappers, specifications, and exception handling.
 * **Dockerized Infrastructure:** Containerized application and database provisioning using Docker and Docker Compose.
 
 ## 🛠 Tech Stack
@@ -29,17 +33,20 @@ A production-ready Spring Boot backend application designed for managing profess
 
 The project follows a domain-driven package structure (`coach`, `player`, `team`, `user`, `auth`, `audit`, `security`) and implements a classic layered MVC architecture:
 
-* **Controllers:** Handle incoming HTTP REST requests and delegate logic.
-* **Services:** Encapsulate business logic and transaction boundaries.
-* **Repositories:** Interface with PostgreSQL using Spring Data JPA.
-* **Mappers:** Handle conversion between database Entities and DTOs to separate the domain model from the API layer.
-* **Security & Configuration:** Dedicated modules for OAuth2 resource server setup, and OpenAPI configurations.
+* **Controllers:** Handle HTTP requests, validate input, and delegate operations to services.
+* **Services:** Contain business logic and transaction boundaries.
+* **Repositories:** Provide data access through Spring Data JPA.
+* **Specifications:** Build dynamic database queries for filtering and searching.
+* **Mappers:** Convert between entities and DTOs, keeping the persistence model separated from the API layer.
+* **Security:** Contains OAuth2/OIDC authentication, authorization, custom user services, and security-related handlers.
+* **Audit:** Provides centralized application logging and audit tracking using Spring AOP.
   
 ### Configuration & Infrastructure Files
 
-* **`docker-compose.yml`**: Defines the services (PostgreSQL database and the Spring Boot application) and manages their networking.
-* **`Dockerfile`**: Defines the multi-stage build process for creating the application's Docker image.
-* **`application.yml`**: Centralized configuration file. It supports both local and Docker environments by utilizing environment variables for database connections and OAuth2 secrets.
+* **`docker-compose.yml`**: Defines the application and PostgreSQL services and their networking.
+* **`Dockerfile`**: Defines the Docker image build process for the application.
+* **`application.yml`**: Contains application configuration and environment-based settings for database and OAuth2 providers.
+* **`Liquibase changelogs`**: Manage version-controlled database schema changes.
 
 ## 🔑 OAuth2 Configuration Setup
 

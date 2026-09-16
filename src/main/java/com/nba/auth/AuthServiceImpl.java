@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
     private final UserService userService;
-    private final AuthMapperImpl authMapper;
+    private final AuthMapper authMapper;
 
     @Override
     @Transactional

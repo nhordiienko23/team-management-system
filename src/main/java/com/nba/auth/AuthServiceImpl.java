@@ -1,9 +1,8 @@
 package com.nba.auth;
 
-import com.nba.core.exception.invalidData.UserInvalidDataException;
 import com.nba.user.User;
-import com.nba.user.UserShortDto;
 import com.nba.user.UserService;
+import com.nba.user.UserShortDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -75,6 +75,8 @@ public class UserServiceImpl implements UserService {
             validateEmailIsFree(request.email());
             user.setEmail(request.email());
         }
+
+        
         return userMapper.toUserShortDto(user);
     }
 
@@ -153,7 +155,6 @@ public class UserServiceImpl implements UserService {
         User newUser = User.builder()
                 .username(uniqueUsername)
                 .email(email)
-                .password(java.util.UUID.randomUUID().toString())
                 .roles(Set.of(UserRole.ROLE_USER))
                 .registeredAt(LocalDateTime.now())
                 .build();

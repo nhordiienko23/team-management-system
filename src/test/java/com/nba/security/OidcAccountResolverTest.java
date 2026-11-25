@@ -17,6 +17,7 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -320,6 +321,63 @@ class OidcAccountResolverTest {
         )).isInstanceOf(OAuth2AuthenticationException.class);
 
         verify(externalIdentityRepository, never()).save(any());
+    }
+
+    @Test
+    void rejectsMissingIssuerOrSubject() {
+        OidcIdToken missingIssuerToken = new OidcIdToken(
+                "test-id-token",
+                Instant.parse("2026-01-01T00:00:00Z"),
+                Instant.parse("2026-01-01T01:00:00Z"),
+                Map.of("sub", "subject")
+        );
+        DefaultOidcUser missingIssuer = new DefaultOidcUser(
+                List.of(new SimpleGrantedAuthority("SCOPE_openid")),
+                missingIssuerToken,
+                "sub"
+        );
+        assertThatThrownBy(() -> resolver.resolve(missingIssuer))
+                .isInstanceOf(OAuth2AuthenticationException.class);
+
+        OidcIdToken missingSubjectToken = new OidcIdToken(
+                "test-id-token",
+                Instant.parse("2026-01-01T00:00:00Z"),
+                Instant.parse("2026-01-01T01:00:00Z"),
+                Map.of("iss", GOOGLE_ISSUER)
+        );
+        DefaultOidcUser missingSubject = new DefaultOidcUser(
+                List.of(new SimpleGrantedAuthority("SCOPE_openid")),
+                missingSubjectToken,
+                "iss"
+        );
+        assertThatThrownBy(() -> resolver.resolve(missingSubject))
+                .isInstanceOf(OAuth2AuthenticationException.class);
+
+        verify(userRepository, never()).findWithRolesByEmailIgnoreCase(any());
+        verify(externalIdentityRepository, never()).save(any());
+    }
+
+    @Test
+    void mapsIdentityStorageConflictToGenericAuthenticationFailure() {
+        ExternalIdentityService conflictingService =
+                org.mockito.Mockito.mock(ExternalIdentityService.class);
+        when(conflictingService.resolve(
+                org.mockito.ArgumentMatchers.eq(GOOGLE_ISSUER),
+                org.mockito.ArgumentMatchers.eq("google-subject"),
+                any(),
+                org.mockito.ArgumentMatchers.any()))
+                .thenThrow(new DataIntegrityViolationException("conflict"));
+        OidcAccountResolver conflictingResolver = new OidcAccountResolver(
+                conflictingService,
+                GOOGLE_ISSUER,
+                ""
+        );
+
+        assertThatThrownBy(() -> conflictingResolver.resolve(
+                oidcUser(GOOGLE_ISSUER, "google-subject",
+                        "person@example.com", true)))
+                .isInstanceOf(OAuth2AuthenticationException.class)
+                .hasMessage("External authentication failed");
     }
 
     private User user(Long id, String email) {

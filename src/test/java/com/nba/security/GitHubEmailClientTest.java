@@ -77,6 +77,56 @@ class GitHubEmailClientTest {
         server.verify();
     }
 
+    @Test
+    void rejectsNullEmailResponse() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        server.expect(requestTo(EMAIL_ENDPOINT))
+                .andRespond(withSuccess("null", MediaType.APPLICATION_JSON));
+        GitHubEmailClient client = new GitHubEmailClient(builder, EMAIL_ENDPOINT);
+
+        assertThatThrownBy(() -> client.findVerifiedPrimaryEmail(userRequest()))
+                .isInstanceOf(OAuth2AuthenticationException.class)
+                .hasMessage("External authentication failed");
+        server.verify();
+    }
+
+    @Test
+    void rejectsAmbiguousVerifiedPrimaryEmails() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        server.expect(requestTo(EMAIL_ENDPOINT))
+                .andRespond(withSuccess("""
+                        [
+                          {"email":"first@example.com","primary":true,"verified":true},
+                          {"email":"second@example.com","primary":true,"verified":true}
+                        ]
+                        """, MediaType.APPLICATION_JSON));
+        GitHubEmailClient client = new GitHubEmailClient(builder, EMAIL_ENDPOINT);
+
+        assertThatThrownBy(() -> client.findVerifiedPrimaryEmail(userRequest()))
+                .isInstanceOf(OAuth2AuthenticationException.class)
+                .hasMessage("External authentication failed");
+        server.verify();
+    }
+
+    @Test
+    void ignoresBlankVerifiedPrimaryEmail() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        server.expect(requestTo(EMAIL_ENDPOINT))
+                .andRespond(withSuccess("""
+                        [
+                          {"email":"  ","primary":true,"verified":true},
+                          {"email":"secondary@example.com","primary":false,"verified":true}
+                        ]
+                        """, MediaType.APPLICATION_JSON));
+        GitHubEmailClient client = new GitHubEmailClient(builder, EMAIL_ENDPOINT);
+
+        assertThat(client.findVerifiedPrimaryEmail(userRequest())).isEmpty();
+        server.verify();
+    }
+
     private OAuth2UserRequest userRequest() {
         ClientRegistration registration = ClientRegistration.withRegistrationId("github")
                 .clientId("test-client")

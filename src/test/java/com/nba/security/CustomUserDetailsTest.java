@@ -17,6 +17,48 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class CustomUserDetailsTest {
     @Test
+    void exposesLocalUserContractForFormAuthentication() {
+        User localUser = User.builder()
+                .username("local-user")
+                .password("encoded-password")
+                .roles(Set.of(UserRole.ROLE_ADMIN, UserRole.ROLE_USER))
+                .build();
+
+        CustomUserDetails userDetails = new CustomUserDetails(localUser);
+
+        assertThat(userDetails.getUser()).isSameAs(localUser);
+        assertThat(userDetails.getUsername()).isEqualTo("local-user");
+        assertThat(userDetails.getPassword()).isEqualTo("encoded-password");
+        assertThat(userDetails.getName()).isEqualTo("local-user");
+        assertThat(userDetails.isAccountNonExpired()).isTrue();
+        assertThat(userDetails.isAccountNonLocked()).isTrue();
+        assertThat(userDetails.isCredentialsNonExpired()).isTrue();
+        assertThat(userDetails.isEnabled()).isTrue();
+        assertThat(userDetails.getAuthorities())
+                .extracting("authority")
+                .containsExactlyInAnyOrder("ROLE_ADMIN", "ROLE_USER");
+        assertThat(userDetails.getAttributes()).isNull();
+        assertThat(userDetails.getClaims()).isNull();
+        assertThat(userDetails.getIdToken()).isNull();
+        assertThat(userDetails.getUserInfo()).isNull();
+    }
+
+    @Test
+    void exposesOAuthAttributesAndNameForOAuthAuthentication() {
+        User localUser = User.builder()
+                .username("oauth-user")
+                .roles(Set.of(UserRole.ROLE_USER))
+                .build();
+        Map<String, Object> attributes = Map.of("id", 123L, "login", "octocat");
+
+        CustomUserDetails userDetails = new CustomUserDetails(localUser, attributes);
+
+        assertThat(userDetails.getAttributes()).isSameAs(attributes);
+        assertThat(userDetails.getClaims()).isSameAs(attributes);
+        assertThat(userDetails.getName()).isEqualTo("oauth-user");
+    }
+
+    @Test
     void preservesOidcTokensAndUsesLocalAuthorities() {
         Instant issuedAt = Instant.parse("2026-01-01T00:00:00Z");
         Instant expiresAt = Instant.parse("2026-01-01T01:00:00Z");

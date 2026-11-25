@@ -4,6 +4,7 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:password}
     driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
       ddl-auto: validate
@@ -17,6 +18,7 @@ spring:
   liquibase:
     enabled: true
     change-log: classpath:/db/changelog/db.changelog-master.yaml
+
   security:
     oauth2:
       client:
@@ -24,9 +26,18 @@ spring:
           google:
             client-id: ${GOOGLE_CLIENTID}
             client-secret: ${GOOGLE_SECRET}
+            scope:
+              - openid
+              - profile
+              - email
+
           github:
             client-id: ${GITHUB_CLIENTID}
             client-secret: ${GITHUB_SECRET}
+            scope:
+              - read:user
+              - user:email
+
           my-custom-auth:
             client-name: My Custom Auth
             client-id: ${CUSTOM_AUTH_CLIENTID}
@@ -39,15 +50,32 @@ spring:
               - email
 
         provider:
-          my-custom-auth:
-            authorization-uri: http://localhost:9000/oauth2/authorize
-            token-uri: http://localhost:9000/oauth2/token
-            user-info-uri: http://localhost:9000/userinfo
-            jwk-set-uri: http://localhost:9000/oauth2/jwks
+          google:
             user-name-attribute: sub
 
+          github:
+            user-name-attribute: id
 
+          my-custom-auth:
+            authorization-uri: ${CUSTOM_AUTH_AUTHORIZATION_URI:http://localhost:9000/oauth2/authorize}
+            token-uri: ${CUSTOM_AUTH_TOKEN_URI:http://localhost:9000/oauth2/token}
+            user-info-uri: ${CUSTOM_AUTH_USER_INFO_URI:http://localhost:9000/userinfo}
+            jwk-set-uri: ${CUSTOM_AUTH_JWK_SET_URI:http://localhost:9000/oauth2/jwks}
+            user-name-attribute: sub
 
+app:
+  frontend-origin: ${FRONTEND_ORIGIN:http://localhost:5173}
+  oauth2:
+    google-oidc-issuer: https://accounts.google.com
+    custom-oidc-issuer: ${CUSTOM_AUTH_ISSUER_URI:http://localhost:9000}
+    trusted-oidc-issuers: ${TRUSTED_OIDC_ISSUERS:https://accounts.google.com,http://localhost:9000}
+    github-email-uri: ${GITHUB_EMAIL_URI:https://api.github.com/user/emails}
+    email-verification-exempt-issuers: ${CUSTOM_AUTH_ISSUER_URI:http://localhost:9000}
 
-
-
+server:
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        secure: ${SESSION_COOKIE_SECURE:true}
+        same-site: lax

@@ -1,0 +1,68 @@
+.form {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.form label {
+  margin-top: 0.4rem;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.form input {
+  width: 100%;
+  min-height: 2.9rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--color-input-border);
+  border-radius: 0.6rem;
+  background: var(--color-input-bg);
+  color: var(--color-text-primary);
+  font: inherit;
+}
+
+.form input:focus {
+  border-color: var(--color-accent);
+  outline: 3px solid var(--color-focus);
+}
+
+.form button {
+  margin-top: 0.8rem;
+}
+
+.alert,
+.success {
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.65rem;
+  line-height: 1.45;
+}
+
+.alert {
+  border: 1px solid var(--color-error-border);
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+}
+
+.success {
+  border: 1px solid var(--color-success-border);
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.success p {
+  margin: 0 0 0.8rem;
+}
+
+.footer {
+  margin: 1.5rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.footer a,
+.success a {
+  color: var(--color-accent);
+  font-weight: 700;
+}

@@ -1,0 +1,131 @@
+databaseChangeLog:
+  - changeSet:
+      id: 013-populate-player-positions
+      author: Nikita Hordiienko
+      comment: Populate basketball positions for players inserted by changeset 009.
+      changes:
+        - sql:
+            sql: |
+              WITH position_seed(team_id, first_name, last_name, position) AS (
+                  VALUES
+                      -- Los Angeles Lakers (team_id: 1)
+                      (1, 'LeBron', 'James', 'SF'),
+                      (1, 'LeBron', 'James', 'PF'),
+                      (1, 'Kobe', 'Bryant', 'SG'),
+                      (1, 'Shaquille', 'O''Neal', 'C'),
+                      (1, 'Magic', 'Johnson', 'PG'),
+                      (1, 'Kareem', 'Abdul-Jabbar', 'C'),
+                      (1, 'Anthony', 'Davis', 'PF'),
+                      (1, 'Anthony', 'Davis', 'C'),
+                      (1, 'Pau', 'Gasol', 'PF'),
+                      (1, 'Pau', 'Gasol', 'C'),
+
+                      -- Chicago Bulls (team_id: 2)
+                      (2, 'Michael', 'Jordan', 'SG'),
+                      (2, 'Scottie', 'Pippen', 'SF'),
+                      (2, 'Dennis', 'Rodman', 'PF'),
+                      (2, 'Derrick', 'Rose', 'PG'),
+                      (2, 'DeMar', 'DeRozan', 'SG'),
+                      (2, 'DeMar', 'DeRozan', 'SF'),
+                      (2, 'Zach', 'LaVine', 'SG'),
+                      (2, 'Joakim', 'Noah', 'C'),
+
+                      -- Golden State Warriors (team_id: 3)
+                      (3, 'Stephen', 'Curry', 'PG'),
+                      (3, 'Klay', 'Thompson', 'SG'),
+                      (3, 'Draymond', 'Green', 'PF'),
+                      (3, 'Draymond', 'Green', 'C'),
+                      (3, 'Kevin', 'Durant', 'SF'),
+                      (3, 'Kevin', 'Durant', 'PF'),
+                      (3, 'Andre', 'Iguodala', 'SF'),
+                      (3, 'Wilt', 'Chamberlain', 'C'),
+                      (3, 'Rick', 'Barry', 'SF'),
+
+                      -- Minnesota Timberwolves (team_id: 4)
+                      (4, 'Kevin', 'Garnett', 'PF'),
+                      (4, 'Kevin', 'Garnett', 'C'),
+                      (4, 'Anthony', 'Edwards', 'SG'),
+                      (4, 'Anthony', 'Edwards', 'SF'),
+                      (4, 'Karl-Anthony', 'Towns', 'C'),
+                      (4, 'Karl-Anthony', 'Towns', 'PF'),
+                      (4, 'Rudy', 'Gobert', 'C'),
+                      (4, 'Wally', 'Szczerbiak', 'SF'),
+                      (4, 'Sam', 'Cassell', 'PG'),
+                      (4, 'Mike', 'Conley', 'PG'),
+
+                      -- Boston Celtics (team_id: 5)
+                      (5, 'Larry', 'Bird', 'SF'),
+                      (5, 'Larry', 'Bird', 'PF'),
+                      (5, 'Bill', 'Russell', 'C'),
+                      (5, 'Jayson', 'Tatum', 'SF'),
+                      (5, 'Jayson', 'Tatum', 'PF'),
+                      (5, 'Jaylen', 'Brown', 'SG'),
+                      (5, 'Jaylen', 'Brown', 'SF'),
+                      (5, 'Paul', 'Pierce', 'SF'),
+                      (5, 'Kevin', 'McHale', 'PF'),
+                      (5, 'Kevin', 'McHale', 'C'),
+                      (5, 'Bob', 'Cousy', 'PG'),
+
+                      -- Cleveland Cavaliers (team_id: 6)
+                      (6, 'Kyrie', 'Irving', 'PG'),
+                      (6, 'Donovan', 'Mitchell', 'SG'),
+                      (6, 'Donovan', 'Mitchell', 'PG'),
+                      (6, 'Kevin', 'Love', 'PF'),
+                      (6, 'Kevin', 'Love', 'C'),
+                      (6, 'Mark', 'Price', 'PG'),
+                      (6, 'Brad', 'Daugherty', 'C'),
+                      (6, 'Evan', 'Mobley', 'PF'),
+                      (6, 'Evan', 'Mobley', 'C'),
+                      (6, 'Darius', 'Garland', 'PG'),
+
+                      -- Miami Heat (team_id: 7)
+                      (7, 'Dwyane', 'Wade', 'SG'),
+                      (7, 'Jimmy', 'Butler', 'SF'),
+                      (7, 'Jimmy', 'Butler', 'SG'),
+                      (7, 'Alonzo', 'Mourning', 'C'),
+                      (7, 'Chris', 'Bosh', 'PF'),
+                      (7, 'Chris', 'Bosh', 'C'),
+                      (7, 'Bam', 'Adebayo', 'C'),
+                      (7, 'Bam', 'Adebayo', 'PF'),
+                      (7, 'Udonis', 'Haslem', 'PF'),
+                      (7, 'Tyler', 'Herro', 'SG'),
+
+                      -- Philadelphia 76ers (team_id: 8)
+                      (8, 'Joel', 'Embiid', 'C'),
+                      (8, 'Allen', 'Iverson', 'SG'),
+                      (8, 'Allen', 'Iverson', 'PG'),
+                      (8, 'Julius', 'Erving', 'SF'),
+                      (8, 'Charles', 'Barkley', 'PF'),
+                      (8, 'Tyrese', 'Maxey', 'PG'),
+                      (8, 'Tyrese', 'Maxey', 'SG'),
+                      (8, 'Hal', 'Greer', 'SG'),
+                      (8, 'Maurice', 'Cheeks', 'PG'),
+
+                      -- New York Knicks (team_id: 9)
+                      (9, 'Patrick', 'Ewing', 'C'),
+                      (9, 'Walt', 'Frazier', 'PG'),
+                      (9, 'Willis', 'Reed', 'C'),
+                      (9, 'Jalen', 'Brunson', 'PG'),
+                      (9, 'Carmelo', 'Anthony', 'SF'),
+                      (9, 'Carmelo', 'Anthony', 'PF'),
+                      (9, 'Julius', 'Randle', 'PF'),
+                      (9, 'John', 'Starks', 'SG')
+              ),
+              matched_positions AS (
+                  SELECT DISTINCT tm.id AS player_id, seed.position
+                  FROM position_seed seed
+                  JOIN team_members tm
+                    ON tm.team_id = seed.team_id
+                   AND tm.first_name = seed.first_name
+                   AND tm.last_name = seed.last_name
+                   AND tm.team_member_role = 'PLAYER'
+              )
+              INSERT INTO player_positions (player_id, player_positions)
+              SELECT matched.player_id, matched.position
+              FROM matched_positions matched
+              WHERE NOT EXISTS (
+                  SELECT 1
+                  FROM player_positions existing
+                  WHERE existing.player_id = matched.player_id
+                    AND existing.player_positions = matched.position
+              );

@@ -377,6 +377,68 @@ class PlayerControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.content[0].championshipWon").value(2));
     }
 
+    @Test
+    void shouldMatchAnySelectedPositionWithoutDuplicatePaginatedPlayers() throws Exception {
+        Team team = createAndSaveTeam("Multi-position search team", 0, 2020);
+        Player bothSelectedPositions = Player.builder()
+                .firstName("Both")
+                .lastName("Positions")
+                .salary(BigDecimal.valueOf(1000000))
+                .team(team)
+                .playerPositions(new HashSet<>(Set.of(PlayerPosition.PG, PlayerPosition.SG)))
+                .rating(80)
+                .championshipsWon(0)
+                .build();
+        Player oneSelectedPosition = Player.builder()
+                .firstName("One")
+                .lastName("Position")
+                .salary(BigDecimal.valueOf(1000000))
+                .team(team)
+                .playerPositions(new HashSet<>(Set.of(PlayerPosition.SG)))
+                .rating(80)
+                .championshipsWon(0)
+                .build();
+        Player unselectedPosition = Player.builder()
+                .firstName("Unselected")
+                .lastName("Position")
+                .salary(BigDecimal.valueOf(1000000))
+                .team(team)
+                .playerPositions(new HashSet<>(Set.of(PlayerPosition.SF)))
+                .rating(80)
+                .championshipsWon(0)
+                .build();
+        playerRepository.saveAll(java.util.List.of(
+                bothSelectedPositions,
+                oneSelectedPosition,
+                unselectedPosition
+        ));
+        team.addTeamMember(bothSelectedPositions);
+        team.addTeamMember(oneSelectedPosition);
+        team.addTeamMember(unselectedPosition);
+        entityManager.flush();
+        entityManager.clear();
+
+        Authentication authentication = createUserAuthentication(
+                "players.search.multiple.positions.user",
+                UserRole.ROLE_USER
+        );
+
+        mockMvc.perform(
+                        get("/api/players/search")
+                                .with(authentication(authentication))
+                                .param("positions", "PG", "SG")
+                                .param("teamName", "Multi-position search team")
+                                .param("page", "0")
+                                .param("size", "10")
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.content[*].firstName",
+                        org.hamcrest.Matchers.containsInAnyOrder("Both", "One")));
+    }
+
 
     @Test
     void shouldReturnAllPlayersWhenSearchHasNoFilters() throws Exception {
@@ -736,4 +798,3 @@ class PlayerControllerIntegrationTest extends AbstractIntegrationTest {
         SecurityContextHolder.clearContext();
     }
 }
-

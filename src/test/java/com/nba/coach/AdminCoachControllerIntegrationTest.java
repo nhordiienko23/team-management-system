@@ -33,6 +33,7 @@ import java.util.UUID;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -91,7 +92,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
         );
 
         String response = mockMvc.perform(
-                        post("/api/admin/coaches")
+                        post("/api/admin/coaches").with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -143,7 +144,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
         );
 
         String response = mockMvc.perform(
-                        post("/api/admin/coaches")
+                        post("/api/admin/coaches").with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -189,7 +190,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
         );
 
         mockMvc.perform(
-                        post("/api/admin/coaches")
+                        post("/api/admin/coaches").with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -225,7 +226,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
         );
 
         mockMvc.perform(
-                        post("/api/admin/coaches")
+                        post("/api/admin/coaches").with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -250,7 +251,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
         );
 
         mockMvc.perform(
-                        post("/api/admin/coaches")
+                        post("/api/admin/coaches").with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -271,7 +272,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
         );
 
         mockMvc.perform(
-                        post("/api/admin/coaches")
+                        post("/api/admin/coaches").with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -294,7 +295,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
         );
 
         mockMvc.perform(
-                        post("/api/admin/coaches")
+                        post("/api/admin/coaches").with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -308,7 +309,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
         authenticateAsAdmin();
 
         mockMvc.perform(
-                        post("/api/admin/coaches")
+                        post("/api/admin/coaches").with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
                                         {
@@ -347,7 +348,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
         );
 
         String response = mockMvc.perform(
-                        patch("/api/admin/coaches/{id}", coach.getId())
+                        patch("/api/admin/coaches/{id}", coach.getId()).with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -413,7 +414,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
         );
 
         mockMvc.perform(
-                        patch("/api/admin/coaches/{id}", coach.getId())
+                        patch("/api/admin/coaches/{id}", coach.getId()).with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -477,7 +478,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
         );
 
         String response = mockMvc.perform(
-                        patch("/api/admin/coaches/{id}", coach.getId())
+                        patch("/api/admin/coaches/{id}", coach.getId()).with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -549,7 +550,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
         );
 
         mockMvc.perform(
-                        patch("/api/admin/coaches/{id}", coach.getId())
+                        patch("/api/admin/coaches/{id}", coach.getId()).with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -585,7 +586,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
         );
 
         mockMvc.perform(
-                        patch("/api/admin/coaches/{id}", coach.getId())
+                        patch("/api/admin/coaches/{id}", coach.getId()).with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -630,7 +631,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
         );
 
         mockMvc.perform(
-                        patch("/api/admin/coaches/{id}", coach.getId())
+                        patch("/api/admin/coaches/{id}", coach.getId()).with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -678,7 +679,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
         );
 
         mockMvc.perform(
-                        patch("/api/admin/coaches/{id}", coach.getId())
+                        patch("/api/admin/coaches/{id}", coach.getId()).with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -701,7 +702,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
         );
 
         mockMvc.perform(
-                        patch("/api/admin/coaches/{id}", 999999L)
+                        patch("/api/admin/coaches/{id}", 999999L).with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -733,7 +734,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
         );
 
         mockMvc.perform(
-                        patch("/api/admin/coaches/{id}", coach.getId())
+                        patch("/api/admin/coaches/{id}", coach.getId()).with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -756,7 +757,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
         );
 
         mockMvc.perform(
-                        patch("/api/admin/coaches/{id}", coach.getId())
+                        patch("/api/admin/coaches/{id}", coach.getId()).with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
                                         {
@@ -791,7 +792,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
         );
 
         mockMvc.perform(
-                        patch("/api/admin/coaches/{id}", coach.getId())
+                        patch("/api/admin/coaches/{id}", coach.getId()).with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -848,7 +849,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
         );
 
         mockMvc.perform(
-                        patch("/api/admin/coaches/{id}", coach.getId())
+                        patch("/api/admin/coaches/{id}", coach.getId()).with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -896,7 +897,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
         );
 
         mockMvc.perform(
-                        delete("/api/admin/coaches/{id}", coach.getId())
+                        delete("/api/admin/coaches/{id}", coach.getId()).with(csrf())
                 )
                 .andExpect(status().isOk())
                 .andExpect(
@@ -935,7 +936,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
         );
 
         mockMvc.perform(
-                        delete("/api/admin/coaches/{id}", coach.getId())
+                        delete("/api/admin/coaches/{id}", coach.getId()).with(csrf())
                 )
                 .andExpect(status().isOk());
 
@@ -969,7 +970,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
         );
 
         mockMvc.perform(
-                        delete("/api/admin/coaches/{id}", coach.getId())
+                        delete("/api/admin/coaches/{id}", coach.getId()).with(csrf())
                 )
                 .andExpect(status().isForbidden());
 
@@ -995,7 +996,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
         );
 
         mockMvc.perform(
-                        delete("/api/admin/coaches/{id}", coach.getId())
+                        delete("/api/admin/coaches/{id}", coach.getId()).with(csrf())
                 )
                 .andExpect(status().isUnauthorized());
     }
@@ -1007,7 +1008,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
         authenticateAsAdmin();
 
         mockMvc.perform(
-                        delete("/api/admin/coaches/{id}", 999999L)
+                        delete("/api/admin/coaches/{id}", 999999L).with(csrf())
                 )
                 .andExpect(status().isNotFound());
     }
@@ -1041,7 +1042,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
                         patch(
                                 "/api/admin/coaches/{coachId}/change-team",
                                 coach.getId()
-                        )
+                        ).with(csrf())
                                 .param(
                                         "newTeamId",
                                         newTeam.getId().toString()
@@ -1159,7 +1160,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
                         patch(
                                 "/api/admin/coaches/{coachId}/change-team",
                                 coach.getId()
-                        )
+                        ).with(csrf())
                                 .param(
                                         "newTeamId",
                                         newTeam.getId().toString()
@@ -1257,7 +1258,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
                         patch(
                                 "/api/admin/coaches/{coachId}/change-team",
                                 coach.getId()
-                        )
+                        ).with(csrf())
                 )
                 .andExpect(status().isOk())
                 .andExpect(
@@ -1346,7 +1347,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
                         patch(
                                 "/api/admin/coaches/{coachId}/change-team",
                                 coach.getId()
-                        )
+                        ).with(csrf())
                 )
                 .andExpect(status().isBadRequest());
     }
@@ -1374,7 +1375,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
                         patch(
                                 "/api/admin/coaches/{coachId}/change-team",
                                 coach.getId()
-                        )
+                        ).with(csrf())
                                 .param(
                                         "newTeamId",
                                         team.getId().toString()
@@ -1422,7 +1423,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
                         patch(
                                 "/api/admin/coaches/{coachId}/change-team",
                                 coach.getId()
-                        )
+                        ).with(csrf())
                                 .param(
                                         "newTeamId",
                                         fullTeam.getId().toString()
@@ -1486,7 +1487,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
                         patch(
                                 "/api/admin/coaches/{coachId}/change-team",
                                 coach.getId()
-                        )
+                        ).with(csrf())
                                 .param(
                                         "newTeamId",
                                         "999999"
@@ -1531,7 +1532,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
                         patch(
                                 "/api/admin/coaches/{coachId}/change-team",
                                 coach.getId()
-                        )
+                        ).with(csrf())
                                 .param(
                                         "newTeamId",
                                         newTeam.getId().toString()
@@ -1578,7 +1579,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
                         patch(
                                 "/api/admin/coaches/{coachId}/change-team",
                                 coach.getId()
-                        )
+                        ).with(csrf())
                                 .param(
                                         "newTeamId",
                                         newTeam.getId().toString()
@@ -1601,7 +1602,7 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
                         patch(
                                 "/api/admin/coaches/{coachId}/change-team",
                                 999999L
-                        )
+                        ).with(csrf())
                                 .param(
                                         "newTeamId",
                                         newTeam.getId().toString()
@@ -1701,4 +1702,3 @@ class AdminCoachControllerIntegrationTest extends AbstractIntegrationTest {
                 .substring(0, 8);
     }
 }
-

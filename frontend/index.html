@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#111318" />
+    <script>
+      (function () {
+        var theme = "dark";
+        try {
+          var savedTheme = window.localStorage.getItem("team-management-theme");
+          if (savedTheme === "dark" || savedTheme === "light") {
+            theme = savedTheme;
+          }
+        } catch (error) {
+          // Keep the default theme if storage is unavailable.
+        }
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.style.colorScheme = theme;
+        document.documentElement.style.backgroundColor = theme === "dark" ? "#111318" : "#f4f6fb";
+        var themeColor = document.querySelector('meta[name="theme-color"]');
+        if (themeColor) {
+          themeColor.content = theme === "dark" ? "#111318" : "#f4f6fb";
+        }
+      })();
+    </script>
+    <title>Team Management</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

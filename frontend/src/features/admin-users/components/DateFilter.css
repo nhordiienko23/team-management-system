@@ -1,0 +1,122 @@
+.date-filter {
+  position: relative;
+  align-self: start;
+}
+
+.date-filter > label {
+  color: var(--color-text-secondary);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.date-filter-control {
+  position: relative;
+}
+
+.date-filter-control input[type="text"] {
+  padding-right: 3rem;
+}
+
+.date-filter-trigger {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: grid;
+  width: 2.65rem;
+  height: 100%;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.date-filter-trigger svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  stroke: currentColor;
+  stroke-width: 1.7;
+}
+
+.date-calendar {
+  position: absolute;
+  z-index: 6;
+  top: 100%;
+  left: 0;
+  width: min(19rem, calc(100vw - 3rem));
+  margin-top: 0.3rem;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.7rem;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-popover);
+}
+
+.date-calendar-heading,
+.date-calendar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.date-calendar button {
+  border: 0;
+  border-radius: 0.4rem;
+  background: transparent;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.date-calendar button:hover,
+.date-calendar td[aria-selected="true"] button {
+  background: var(--color-accent-subtle);
+  color: var(--color-accent);
+}
+
+.date-calendar button:focus-visible,
+.date-filter-trigger:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.date-calendar-heading button {
+  width: 2rem;
+  height: 2rem;
+  font-size: 1.3rem;
+}
+
+.date-calendar table {
+  width: 100%;
+  margin: 0.4rem 0;
+  border-collapse: collapse;
+  table-layout: fixed;
+  text-align: center;
+}
+
+.date-calendar th {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.date-calendar td button {
+  width: 2rem;
+  height: 2rem;
+}
+
+.date-calendar td button[aria-current="date"] {
+  border: 1px solid var(--color-accent);
+}
+
+.date-calendar-actions button {
+  padding: 0.4rem;
+  color: var(--color-accent);
+  font-size: 0.85rem;
+}
+
+@media (min-width: 901px) {
+  .date-filter:nth-child(4) .date-calendar {
+    right: 0;
+    left: auto;
+  }
+}

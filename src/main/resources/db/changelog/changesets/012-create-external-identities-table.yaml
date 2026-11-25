@@ -1,0 +1,45 @@
+databaseChangeLog:
+  - changeSet:
+      id: 012-create-external-identities-table
+      author: Nikita Hordiienko
+      changes:
+        - createTable:
+            tableName: external_identities
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: provider
+                  type: VARCHAR(512)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: subject
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: external_identities
+            columnNames: provider, subject
+            constraintName: uq_external_identity_provider_subject
+        - addUniqueConstraint:
+            tableName: external_identities
+            columnNames: user_id, provider
+            constraintName: uq_external_identity_user_provider
+        - addForeignKeyConstraint:
+            baseTableName: external_identities
+            baseColumnNames: user_id
+            constraintName: fk_external_identity_user
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE

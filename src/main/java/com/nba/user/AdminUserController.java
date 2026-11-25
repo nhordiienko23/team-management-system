@@ -40,8 +40,8 @@ public class AdminUserController {
 
     @Operation(summary = "returns user profile by id")
     @GetMapping("/{userId}")
-    public ResponseEntity<UserShortDto> getUserById(@PathVariable Long userId) {
-        return ResponseEntity.ok(userService.getUserProfileById(userId));
+    public ResponseEntity<AdminUserDetailDto> getUserById(@PathVariable Long userId) {
+        return ResponseEntity.ok(userService.getAdminUserDetailsById(userId));
     }
 
     @Operation(summary = "updates user profile by user id ")

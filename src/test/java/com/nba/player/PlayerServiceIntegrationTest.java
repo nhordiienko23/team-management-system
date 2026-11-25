@@ -1266,7 +1266,7 @@ class PlayerServiceIntegrationTest extends AbstractIntegrationTest {
                 new PlayerSearchFilter(
                         "Leb",
                         "Jam",
-                        "Lakers",
+                        "Service Lakers Search",
                         90,
                         100,
                         3,

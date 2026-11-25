@@ -7,11 +7,11 @@ import org.springframework.context.annotation.Bean;
 
 @Builder
 public record RegisterRequest(
-        @NotBlank(message = "Username can't be blank")
+        @NotBlank(message = "Please enter your username.")
         String username,
-        @NotBlank(message = "Password can't be blank")
+        @NotBlank(message = "Please enter your password.")
         String password,
-        @Email
-        @NotBlank(message = "Email can't be blank")
+        @Email(message = "Please enter a valid email address, like name@example.com.")
+        @NotBlank(message = "Please enter your email address.")
         String email) {
 }

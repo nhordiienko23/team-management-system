@@ -9,14 +9,14 @@ import java.util.Set;
 
 @Builder
 public record UserCreationRequest(
-        @NotBlank(message = "Username can't be blank")
+        @NotBlank(message = "Please enter your username.")
         String username,
-        @NotBlank(message = "Password can't be blank")
+        @NotBlank(message = "Please enter your password.")
         String password,
-        @Email
-        @NotBlank(message = "Email can't be blank")
+        @Email(message = "Please enter a valid email address, like name@example.com.")
+        @NotBlank(message = "Please enter your email address.")
         String email,
-        @NotEmpty(message = "User must have at least one role")
+        @NotEmpty(message = "Please select at least one role.")
         Set<UserRole> roles
 ) {
 }

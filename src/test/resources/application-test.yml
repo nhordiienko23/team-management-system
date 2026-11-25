@@ -6,19 +6,40 @@ spring:
           google:
             client-id: test
             client-secret: test
+            scope:
+              - openid
+              - profile
+              - email
 
           github:
             client-id: test
             client-secret: test
+            scope:
+              - read:user
+              - user:email
 
           my-custom-auth:
             client-id: test
             client-secret: test
 
         provider:
+          google:
+            user-name-attribute: sub
+          github:
+            user-name-attribute: id
           my-custom-auth:
             authorization-uri: http://localhost:9000/oauth2/authorize
             token-uri: http://localhost:9000/oauth2/token
             user-info-uri: http://localhost:9000/userinfo
             jwk-set-uri: http://localhost:9000/oauth2/jwks
             user-name-attribute: sub
+
+app:
+  oauth2:
+    custom-oidc-issuer: http://localhost:9000
+
+server:
+  servlet:
+    session:
+      cookie:
+        secure: false

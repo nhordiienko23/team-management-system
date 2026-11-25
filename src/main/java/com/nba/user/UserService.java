@@ -12,6 +12,8 @@ public interface UserService {
 
     UserShortDto getUserProfileById(Long userId);
 
+    AdminUserDetailDto getAdminUserDetailsById(Long userId);
+
     UserShortDto partialUpdateUserProfileById(Long userId, UserUpdateRequest updateRequest);
 
     void deleteUserById(Long userId);

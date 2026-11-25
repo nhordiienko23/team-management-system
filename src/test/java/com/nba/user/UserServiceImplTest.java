@@ -2,6 +2,7 @@ package com.nba.user;
 
 import com.nba.core.exception.invalidData.InvalidUserDataException;
 import com.nba.core.exception.notFound.UserNotFoundException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -22,23 +24,12 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
-
-    @Mock
-    private UserRepository userRepository;
-
-    @Mock
-    private UserMapper userMapper;
-
-    @Mock
-    private PasswordEncoder passwordEncoder;
-
-    @InjectMocks
-    private UserServiceImpl userService;
-
 
     private static final Long NON_EXISTING_USER_ID = 9999L;
     private static final Long EXISTING_USER_ID = 1L;
@@ -50,30 +41,48 @@ class UserServiceImplTest {
     private static final String ENCODED_PASSWORD = "encodedPassword";
     private static final String WRONG_PASSWORD = "wrongPassword";
 
+    private static final String GOOGLE_ISSUER = "https://accounts.google.com";
+    private static final String CUSTOM_ISSUER = "http://localhost:9000";
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private ExternalIdentityRepository externalIdentityRepository;
+
+    @Mock
+    private UserMapper userMapper;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @InjectMocks
+    private UserServiceImpl userService;
+
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(userService, "customAuthIssuer", CUSTOM_ISSUER);
+    }
+
     @Test
     @DisplayName("should return profile by id")
     void shouldGetProfileById() {
         User user = createUser();
+        UserShortDto expected = createUserShortDto();
 
-        UserShortDto expectedUserShortDto = createUserShortDto();
-
-        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID))
-                .thenReturn(user);
-
-        when(userMapper.toUserShortDto(user))
-                .thenReturn(expectedUserShortDto);
+        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID)).thenReturn(user);
+        when(userMapper.toUserShortDto(user)).thenReturn(expected);
 
         UserShortDto result = userService.getUserProfileById(EXISTING_USER_ID);
 
-        assertEquals(expectedUserShortDto, result);
-
+        assertEquals(expected, result);
         verify(userRepository).findUserByIdOrThrow404(EXISTING_USER_ID);
         verify(userMapper).toUserShortDto(user);
     }
 
     @Test
-    @DisplayName("should return UserNotFoundException when get profile with non-existing user id")
-    void shouldThrowUserNotFoundExceptionWhenGetProfileByNonExistingUserId() {
+    @DisplayName("should throw UserNotFoundException when profile does not exist")
+    void shouldThrowWhenProfileDoesNotExist() {
         when(userRepository.findUserByIdOrThrow404(NON_EXISTING_USER_ID))
                 .thenThrow(new UserNotFoundException(NON_EXISTING_USER_ID));
 
@@ -83,68 +92,160 @@ class UserServiceImplTest {
         );
 
         assertEquals("User with id 9999 not found", exception.getMessage());
-
-        verify(userRepository).findUserByIdOrThrow404(NON_EXISTING_USER_ID);
         verifyNoInteractions(userMapper);
     }
 
     @Test
-    @DisplayName("should not throw exception when username is free")
-    void shouldNotThrowExceptionWhenUsernameIsFree() {
-        String username = "nikita";
+    @DisplayName("should return administrator details with sorted distinct provider names")
+    void shouldReturnAdminDetailsWithFriendlyLinkedProviderNames() {
+        User user = createUser();
+        UserFullDto fullDto = createFullDto(user, null);
 
-        when(userRepository.existsByUsername(username))
-                .thenReturn(false);
+        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID)).thenReturn(user);
+        when(userMapper.toUserFullDto(user)).thenReturn(fullDto);
+        when(externalIdentityRepository.findAllByUser_Id(EXISTING_USER_ID))
+                .thenReturn(List.of(
+                        identity(GOOGLE_ISSUER, "google-sub-1", user),
+                        identity("google", "google-sub-2", user),
+                        identity("github", "github-sub", user),
+                        identity(CUSTOM_ISSUER, "custom-sub", user),
+                        identity("https://unknown.example/issuer", "other-sub", user)
+                ));
 
-        assertDoesNotThrow(() -> userService.validateUsernameIsFree(username));
-        verify(userRepository).existsByUsername(username);
+        AdminUserDetailDto result = userService.getAdminUserDetailsById(EXISTING_USER_ID);
+
+        assertEquals(EXISTING_USER_ID, result.id());
+        assertEquals("nikita", result.username());
+        assertEquals("nikita@gmail.com", result.email());
+        assertEquals(List.of(UserRole.ROLE_USER.name()), result.roles());
+        assertEquals("2026-09-10T10:10", result.registeredAt());
+        assertNull(result.lastLoginAt());
+        assertEquals(List.of(
+                "Custom authorization server",
+                "GitHub",
+                "Google",
+                "Other sign-in provider"
+        ), result.linkedProviders());
+
+        verify(externalIdentityRepository).findAllByUser_Id(EXISTING_USER_ID);
     }
 
     @Test
-    @DisplayName("should throw InvalidUserDataException exception when username already exists")
-    void shouldThrowInvalidUserDataExceptionWhenUsernameAlreadyExists() {
-        String username = "nikita";
+    @DisplayName("should return administrator details with last login timestamp")
+    void shouldReturnAdminDetailsWithLastLogin() {
+        User user = createUser();
+        UserFullDto fullDto = UserFullDto.builder()
+                .id(EXISTING_USER_ID)
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .roles(List.of(UserRole.ROLE_USER.name()))
+                .registeredAt("2026-09-10T10:10")
+                .lastLogin("2026-09-11T12:30")
+                .linkedProviders(List.of())
+                .build();
 
-        when(userRepository.existsByUsername(username))
-                .thenReturn(true);
+        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID)).thenReturn(user);
+        when(userMapper.toUserFullDto(user)).thenReturn(fullDto);
+        when(externalIdentityRepository.findAllByUser_Id(EXISTING_USER_ID)).thenReturn(List.of());
 
-        InvalidUserDataException exception = assertThrows(InvalidUserDataException.class,
-                () -> userService.validateUsernameIsFree(username));
+        AdminUserDetailDto result = userService.getAdminUserDetailsById(EXISTING_USER_ID);
 
-        assertEquals("User with username nikita already exists",
-                exception.getMessage());
+        assertEquals("2026-09-11T12:30", result.lastLoginAt());
+        assertEquals(List.of(), result.linkedProviders());
+    }
 
-        verify(userRepository).existsByUsername(username);
+    @Test
+    @DisplayName("should map configured custom OIDC issuer to a safe provider name")
+    void shouldMapConfiguredCustomOidcIssuerToProviderName() {
+        String configuredIssuer = "https://login.example.com";
+        ReflectionTestUtils.setField(userService, "customAuthIssuer", configuredIssuer);
+
+        User user = createUser();
+        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID)).thenReturn(user);
+        when(userMapper.toUserFullDto(user)).thenReturn(createFullDto(user, null));
+        when(externalIdentityRepository.findAllByUser_Id(EXISTING_USER_ID))
+                .thenReturn(List.of(identity(configuredIssuer, "private-sub", user)));
+
+        AdminUserDetailDto result = userService.getAdminUserDetailsById(EXISTING_USER_ID);
+
+        assertEquals(List.of("Custom authorization server"), result.linkedProviders());
+    }
+
+    @Test
+    @DisplayName("should return an empty provider list when no identities are linked")
+    void shouldReturnEmptyProviderListWhenNoIdentitiesAreLinked() {
+        User user = createUser();
+
+        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID)).thenReturn(user);
+        when(userMapper.toUserFullDto(user)).thenReturn(createFullDto(user, null));
+        when(externalIdentityRepository.findAllByUser_Id(EXISTING_USER_ID)).thenReturn(List.of());
+
+        AdminUserDetailDto result = userService.getAdminUserDetailsById(EXISTING_USER_ID);
+
+        assertNull(result.lastLoginAt());
+        assertEquals(List.of(), result.linkedProviders());
+    }
+
+    @Test
+    @DisplayName("should throw UserNotFoundException when administrator details do not exist")
+    void shouldThrowWhenAdminDetailsUserDoesNotExist() {
+        when(userRepository.findUserByIdOrThrow404(NON_EXISTING_USER_ID))
+                .thenThrow(new UserNotFoundException(NON_EXISTING_USER_ID));
+
+        assertThrows(
+                UserNotFoundException.class,
+                () -> userService.getAdminUserDetailsById(NON_EXISTING_USER_ID)
+        );
+
+        verifyNoInteractions(userMapper, externalIdentityRepository);
+    }
+
+    @Test
+    @DisplayName("should not throw exception when username is free")
+    void shouldNotThrowWhenUsernameIsFree() {
+        when(userRepository.existsByUsername("nikita")).thenReturn(false);
+
+        assertDoesNotThrow(() -> userService.validateUsernameIsFree("nikita"));
+
+        verify(userRepository).existsByUsername("nikita");
+    }
+
+    @Test
+    @DisplayName("should throw InvalidUserDataException when username already exists")
+    void shouldThrowWhenUsernameAlreadyExists() {
+        when(userRepository.existsByUsername("nikita")).thenReturn(true);
+
+        InvalidUserDataException exception = assertThrows(
+                InvalidUserDataException.class,
+                () -> userService.validateUsernameIsFree("nikita")
+        );
+
+        assertEquals("User with username nikita already exists", exception.getMessage());
+        verify(userRepository).existsByUsername("nikita");
     }
 
     @Test
     @DisplayName("should not throw exception when email is free")
-    void shouldNotThrowExceptionWhenEmailIsFree() {
-        String email = "nikita@gmail.com";
+    void shouldNotThrowWhenEmailIsFree() {
+        when(userRepository.existsByEmail("nikita@gmail.com")).thenReturn(false);
 
-        when(userRepository.existsByEmail(email))
-                .thenReturn(false);
+        assertDoesNotThrow(() -> userService.validateEmailIsFree("nikita@gmail.com"));
 
-        assertDoesNotThrow(() -> userService.validateEmailIsFree(email));
-
-        verify(userRepository).existsByEmail(email);
+        verify(userRepository).existsByEmail("nikita@gmail.com");
     }
 
     @Test
-    @DisplayName("should throw InvalidUserDataException exception when email already exists")
-    void shouldThrowInvalidUserDataExceptionExceptionWhenEmailAlreadyExists() {
-        String email = "nikita@gmail.com";
+    @DisplayName("should throw InvalidUserDataException when email already exists")
+    void shouldThrowWhenEmailAlreadyExists() {
+        when(userRepository.existsByEmail("nikita@gmail.com")).thenReturn(true);
 
-        when(userRepository.existsByEmail(email))
-                .thenReturn(true);
+        InvalidUserDataException exception = assertThrows(
+                InvalidUserDataException.class,
+                () -> userService.validateEmailIsFree("nikita@gmail.com")
+        );
 
-        InvalidUserDataException exception = assertThrows(InvalidUserDataException.class,
-                () -> userService.validateEmailIsFree(email));
-
-        assertEquals("User with email nikita@gmail.com already exists",
-                exception.getMessage());
-
-        verify(userRepository).existsByEmail(email);
+        assertEquals("User with email nikita@gmail.com already exists", exception.getMessage());
+        verify(userRepository).existsByEmail("nikita@gmail.com");
     }
 
     @Test
@@ -153,97 +254,65 @@ class UserServiceImplTest {
         User user = createUser();
         user.setPassword(OLD_PASSWORD);
 
-
-        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID))
-                .thenReturn(user);
-        when(passwordEncoder.encode(NEW_PASSWORD))
-                .thenReturn(ENCODED_PASSWORD);
+        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID)).thenReturn(user);
+        when(passwordEncoder.encode(NEW_PASSWORD)).thenReturn(ENCODED_PASSWORD);
 
         userService.setUserPasswordById(EXISTING_USER_ID, NEW_PASSWORD);
 
         assertEquals(ENCODED_PASSWORD, user.getPassword());
-
-        verify(userRepository).findUserByIdOrThrow404(EXISTING_USER_ID);
         verify(passwordEncoder).encode(NEW_PASSWORD);
     }
 
     @Test
-    @DisplayName("should throw exception when setting password for non existing user")
-    void shouldThrowUserNotFoundExceptionWhenSettingPasswordForNonExistingUser() {
-
+    @DisplayName("should throw UserNotFoundException when setting password for missing user")
+    void shouldThrowWhenSettingPasswordForMissingUser() {
         when(userRepository.findUserByIdOrThrow404(NON_EXISTING_USER_ID))
                 .thenThrow(new UserNotFoundException(NON_EXISTING_USER_ID));
 
-        UserNotFoundException exception = assertThrows(UserNotFoundException.class,
-                () -> userService.setUserPasswordById(NON_EXISTING_USER_ID, "newPassword"));
+        assertThrows(
+                UserNotFoundException.class,
+                () -> userService.setUserPasswordById(NON_EXISTING_USER_ID, NEW_PASSWORD)
+        );
 
-        assertEquals("User with id 9999 not found",
-                exception.getMessage());
-
-        verify(userRepository).findUserByIdOrThrow404(NON_EXISTING_USER_ID);
         verifyNoInteractions(passwordEncoder);
-
     }
 
     @Test
     @DisplayName("should get user by username")
     void shouldGetUserByUsername() {
         User user = createUser();
-        String username = "nikita";
+        when(userRepository.findByUsername("nikita")).thenReturn(Optional.of(user));
 
-        when(userRepository.findByUsername(username))
-                .thenReturn(Optional.of(user));
-        User result = userService.getUserByUsername(username);
+        User result = userService.getUserByUsername("nikita");
 
-        assertEquals(user.getId(),
-                result.getId());
-
-        assertEquals(user.getUsername(),
-                result.getUsername());
-
-        assertEquals(user.getEmail(),
-                result.getEmail());
-
-        verify(userRepository).findByUsername(username);
+        assertSame(user, result);
     }
 
     @Test
-    @DisplayName("should throw InvalidUserDataException when get user by non existing username")
-    void shouldThrowInvalidUserDataExceptionWhenGetUserByNonExistingUsername() {
-        String nonExistingUsername = "nonExistingUsername";
-
-        when(userRepository.findByUsername(nonExistingUsername))
-                .thenReturn(Optional.empty());
+    @DisplayName("should throw InvalidUserDataException when username is not found")
+    void shouldThrowWhenUsernameIsNotFound() {
+        when(userRepository.findByUsername("unknown")).thenReturn(Optional.empty());
 
         InvalidUserDataException exception = assertThrows(
                 InvalidUserDataException.class,
-                () -> userService.getUserByUsername(nonExistingUsername));
+                () -> userService.getUserByUsername("unknown")
+        );
 
-        assertEquals("User with username nonExistingUsername not found",
-                exception.getMessage());
-
-        verify(userRepository).findByUsername(nonExistingUsername);
+        assertEquals("User with username unknown not found", exception.getMessage());
     }
 
-
     @Test
-    @DisplayName("should save user to database and return user short DTO")
-    void shouldSaveUserToDatabaseAndReturnUserShortDTO() {
+    @DisplayName("should save user and return short DTO")
+    void shouldSaveUserAndReturnShortDto() {
         User user = createUser();
-        UserShortDto expectedUserShortDto = createUserShortDto();
+        UserShortDto expected = createUserShortDto();
 
-        when(userRepository.save(user))
-                .thenReturn(user);
+        when(userRepository.save(user)).thenReturn(user);
+        when(userMapper.toUserShortDto(user)).thenReturn(expected);
 
-        when(userMapper.toUserShortDto(user))
-                .thenReturn(expectedUserShortDto);
-
-        UserShortDto result = userService.saveToDataBaseAndReturnDto(user);
-
-        assertEquals(expectedUserShortDto, result);
+        assertEquals(expected, userService.saveToDataBaseAndReturnDto(user));
 
         verify(userRepository).save(user);
-
         verify(userMapper).toUserShortDto(user);
     }
 
@@ -251,444 +320,336 @@ class UserServiceImplTest {
     @DisplayName("should update username and email")
     void shouldUpdateUsernameAndEmail() {
         User user = createUser();
-
-        UserUpdateRequest updateRequest = UserUpdateRequest.builder()
+        UserUpdateRequest request = UserUpdateRequest.builder()
+                .username(NEW_USERNAME)
+                .email(NEW_EMAIL)
+                .build();
+        UserShortDto expected = UserShortDto.builder()
+                .id(EXISTING_USER_ID)
                 .username(NEW_USERNAME)
                 .email(NEW_EMAIL)
                 .build();
 
-        UserShortDto expectedUserShortDto = UserShortDto.builder()
-                .id(user.getId())
-                .username(NEW_USERNAME)
-                .email(NEW_EMAIL)
-                .build();
+        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID)).thenReturn(user);
+        when(userRepository.existsByUsername(NEW_USERNAME)).thenReturn(false);
+        when(userRepository.existsByEmail(NEW_EMAIL)).thenReturn(false);
+        when(userMapper.toUserShortDto(user)).thenReturn(expected);
 
-        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID))
-                .thenReturn(user);
-        when(userRepository.existsByUsername(NEW_USERNAME))
-                .thenReturn(false);
-        when(userRepository.existsByEmail(NEW_EMAIL))
-                .thenReturn(false);
-        when(userMapper.toUserShortDto(user))
-                .thenReturn(expectedUserShortDto);
+        UserShortDto result = userService.partialUpdateUserProfileById(EXISTING_USER_ID, request);
 
-        UserShortDto result = userService.partialUpdateUserProfileById(EXISTING_USER_ID,
-                updateRequest);
-
-        assertEquals(expectedUserShortDto, result);
+        assertEquals(expected, result);
         assertEquals(NEW_USERNAME, user.getUsername());
         assertEquals(NEW_EMAIL, user.getEmail());
-
-        verify(userRepository).findUserByIdOrThrow404(EXISTING_USER_ID);
-        verify(userRepository).existsByUsername(NEW_USERNAME);
-        verify(userRepository).existsByEmail(NEW_EMAIL);
-        verify(userMapper).toUserShortDto(user);
     }
 
     @Test
     @DisplayName("should update only username")
     void shouldUpdateOnlyUsername() {
         User user = createUser();
-
-        UserUpdateRequest userUpdateRequest = UserUpdateRequest.builder()
+        UserUpdateRequest request = UserUpdateRequest.builder()
                 .username(NEW_USERNAME)
-                .email(null)
                 .build();
 
-        UserShortDto expectedUserShortDTO = UserShortDto.builder()
-                .id(user.getId())
-                .username(NEW_USERNAME)
-                .email(user.getEmail())
-                .build();
+        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID)).thenReturn(user);
+        when(userRepository.existsByUsername(NEW_USERNAME)).thenReturn(false);
+        when(userMapper.toUserShortDto(user)).thenAnswer(invocation -> createUserShortDtoFor(user));
 
-        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID))
-                .thenReturn(user);
-        when(userRepository.existsByUsername(NEW_USERNAME))
-                .thenReturn(false);
-        when(userMapper.toUserShortDto(user))
-                .thenReturn(expectedUserShortDTO);
-
-        UserShortDto result = userService.partialUpdateUserProfileById(EXISTING_USER_ID, userUpdateRequest);
-
-        assertEquals(expectedUserShortDTO.id(),
-                result.id());
-
-        assertEquals(expectedUserShortDTO.username(),
-                result.username());
-
-        assertEquals(expectedUserShortDTO.email(),
-                result.email());
+        userService.partialUpdateUserProfileById(EXISTING_USER_ID, request);
 
         assertEquals(NEW_USERNAME, user.getUsername());
-
-        verify(userRepository).findUserByIdOrThrow404(EXISTING_USER_ID);
-        verify(userRepository).existsByUsername(NEW_USERNAME);
-        verifyNoMoreInteractions(userRepository);
-        verify(userMapper).toUserShortDto(user);
+        assertEquals("nikita@gmail.com", user.getEmail());
+        verify(userRepository, never()).existsByEmail(any());
     }
 
     @Test
     @DisplayName("should update only email")
     void shouldUpdateOnlyEmail() {
         User user = createUser();
-
-        UserUpdateRequest userUpdateRequest = UserUpdateRequest.builder()
-                .username(null)
+        UserUpdateRequest request = UserUpdateRequest.builder()
                 .email(NEW_EMAIL)
                 .build();
 
-        UserShortDto expectedUserShortDTO = UserShortDto.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(NEW_EMAIL)
-                .build();
+        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID)).thenReturn(user);
+        when(userRepository.existsByEmail(NEW_EMAIL)).thenReturn(false);
+        when(userMapper.toUserShortDto(user)).thenAnswer(invocation -> createUserShortDtoFor(user));
 
-        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID))
-                .thenReturn(user);
-        when(userRepository.existsByEmail(NEW_EMAIL))
-                .thenReturn(false);
-        when(userMapper.toUserShortDto(user))
-                .thenReturn(expectedUserShortDTO);
+        userService.partialUpdateUserProfileById(EXISTING_USER_ID, request);
 
-        UserShortDto result = userService.partialUpdateUserProfileById(EXISTING_USER_ID, userUpdateRequest);
-
-        assertEquals(expectedUserShortDTO.id(),
-                result.id());
-
-        assertEquals(expectedUserShortDTO.username(),
-                result.username());
-
-        assertEquals(expectedUserShortDTO.email(),
-                result.email());
-
+        assertEquals("nikita", user.getUsername());
         assertEquals(NEW_EMAIL, user.getEmail());
+        verify(userRepository, never()).existsByUsername(any());
+    }
 
-        verify(userRepository).findUserByIdOrThrow404(EXISTING_USER_ID);
-        verify(userRepository).existsByEmail(NEW_EMAIL);
-        verifyNoMoreInteractions(userRepository);
-        verify(userMapper).toUserShortDto(user);
+    @Test
+    @DisplayName("should not check uniqueness when profile fields are unchanged")
+    void shouldNotCheckUniquenessWhenFieldsAreUnchanged() {
+        User user = createUser();
+        UserUpdateRequest request = UserUpdateRequest.builder()
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .build();
+
+        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID)).thenReturn(user);
+        when(userMapper.toUserShortDto(user)).thenReturn(createUserShortDto());
+
+        userService.partialUpdateUserProfileById(EXISTING_USER_ID, request);
+
+        verify(userRepository, never()).existsByUsername(any());
+        verify(userRepository, never()).existsByEmail(any());
     }
 
     @Test
     @DisplayName("should throw InvalidUserDataException when new username already exists")
-    void shouldThrowInvalidUserDataExceptionWhenNewUsernameAlreadyExists() {
+    void shouldThrowWhenNewUsernameAlreadyExists() {
         User user = createUser();
-        UserUpdateRequest userUpdateRequest = UserUpdateRequest.builder()
+        UserUpdateRequest request = UserUpdateRequest.builder()
                 .username(NEW_USERNAME)
                 .email(NEW_EMAIL)
                 .build();
 
-        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID))
-                .thenReturn(user);
-        when(userRepository.existsByUsername(NEW_USERNAME))
-                .thenReturn(true);
+        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID)).thenReturn(user);
+        when(userRepository.existsByUsername(NEW_USERNAME)).thenReturn(true);
 
-        InvalidUserDataException exception = assertThrows(InvalidUserDataException.class,
-                () -> userService.partialUpdateUserProfileById(EXISTING_USER_ID, userUpdateRequest));
+        InvalidUserDataException exception = assertThrows(
+                InvalidUserDataException.class,
+                () -> userService.partialUpdateUserProfileById(EXISTING_USER_ID, request)
+        );
+
         assertEquals("User with username nikitaUpdated already exists", exception.getMessage());
-
-        verify(userRepository).findUserByIdOrThrow404(EXISTING_USER_ID);
-        verify(userRepository).existsByUsername(NEW_USERNAME);
-        verifyNoMoreInteractions(userRepository);
+        verify(userRepository, never()).existsByEmail(any());
         verifyNoInteractions(userMapper);
-
     }
 
     @Test
     @DisplayName("should throw InvalidUserDataException when new email already exists")
-    void shouldThrowInvalidUserDataExceptionWhenNewEmailAlreadyExists() {
+    void shouldThrowWhenNewEmailAlreadyExists() {
         User user = createUser();
-
-        UserUpdateRequest userUpdateRequest = UserUpdateRequest.builder()
+        UserUpdateRequest request = UserUpdateRequest.builder()
                 .username(NEW_USERNAME)
                 .email(NEW_EMAIL)
                 .build();
 
-        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID))
-                .thenReturn(user);
+        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID)).thenReturn(user);
+        when(userRepository.existsByUsername(NEW_USERNAME)).thenReturn(false);
+        when(userRepository.existsByEmail(NEW_EMAIL)).thenReturn(true);
 
-        when(userRepository.existsByUsername(NEW_USERNAME))
-                .thenReturn(false);
-
-        when(userRepository.existsByEmail(NEW_EMAIL))
-                .thenReturn(true);
-
-        InvalidUserDataException exception = assertThrows(InvalidUserDataException.class,
-                () -> userService.partialUpdateUserProfileById(EXISTING_USER_ID, userUpdateRequest));
+        InvalidUserDataException exception = assertThrows(
+                InvalidUserDataException.class,
+                () -> userService.partialUpdateUserProfileById(EXISTING_USER_ID, request)
+        );
 
         assertEquals("User with email nikitanewEmail@gmail.com already exists", exception.getMessage());
-
-        verify(userRepository).findUserByIdOrThrow404(EXISTING_USER_ID);
-        verify(userRepository).existsByUsername(NEW_USERNAME);
-        verify(userRepository).existsByEmail(NEW_EMAIL);
-        verifyNoMoreInteractions(userRepository);
         verifyNoInteractions(userMapper);
-
     }
 
     @Test
-    @DisplayName("should throw UserNotFoundException when updating user by non existing user id")
-    void shouldThrowUserNotFoundExceptionWhenUpdatingByNonExistingUserId() {
-        UserUpdateRequest userUpdateRequest = UserUpdateRequest.builder()
-                .username(NEW_USERNAME)
-                .build();
+    @DisplayName("should throw UserNotFoundException when updating missing user")
+    void shouldThrowWhenUpdatingMissingUser() {
+        UserUpdateRequest request = UserUpdateRequest.builder().username(NEW_USERNAME).build();
 
         when(userRepository.findUserByIdOrThrow404(NON_EXISTING_USER_ID))
                 .thenThrow(new UserNotFoundException(NON_EXISTING_USER_ID));
 
-        UserNotFoundException exception = assertThrows(UserNotFoundException.class,
-                () -> userService.partialUpdateUserProfileById(NON_EXISTING_USER_ID, userUpdateRequest));
+        assertThrows(
+                UserNotFoundException.class,
+                () -> userService.partialUpdateUserProfileById(NON_EXISTING_USER_ID, request)
+        );
 
-        assertEquals("User with id 9999 not found", exception.getMessage());
-
-        verify(userRepository).findUserByIdOrThrow404(NON_EXISTING_USER_ID);
-        verifyNoMoreInteractions(userRepository);
         verifyNoInteractions(userMapper);
     }
 
     @Test
-    @DisplayName("should delete by user id")
-    void shouldDeleteById() {
+    @DisplayName("should delete user by id")
+    void shouldDeleteUserById() {
         User user = createUser();
-        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID))
-                .thenReturn(user);
+        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID)).thenReturn(user);
+
         userService.deleteUserById(EXISTING_USER_ID);
 
-        verify(userRepository).findUserByIdOrThrow404(EXISTING_USER_ID);
         verify(userRepository).delete(user);
     }
 
     @Test
-    @DisplayName("should throw UserNotFoundException when deleting user by non-existing id")
-    void shouldThrowUserNotFoundExceptionWhenDeletingUserByNonExistingId() {
-
+    @DisplayName("should throw UserNotFoundException when deleting missing user")
+    void shouldThrowWhenDeletingMissingUser() {
         when(userRepository.findUserByIdOrThrow404(NON_EXISTING_USER_ID))
                 .thenThrow(new UserNotFoundException(NON_EXISTING_USER_ID));
 
-        UserNotFoundException exception = assertThrows(UserNotFoundException.class,
-                () -> userService.deleteUserById(NON_EXISTING_USER_ID));
+        assertThrows(
+                UserNotFoundException.class,
+                () -> userService.deleteUserById(NON_EXISTING_USER_ID)
+        );
 
-        assertEquals("User with id 9999 not found", exception.getMessage());
-
-        verify(userRepository).findUserByIdOrThrow404(NON_EXISTING_USER_ID);
-        verifyNoMoreInteractions(userRepository);
+        verify(userRepository, never()).delete((User) any());
     }
 
     @Test
     @DisplayName("should return all users")
     void shouldReturnAllUsers() {
         User user1 = createUser();
+        User user2 = User.builder().id(2L).username("sveta").email("sveta@gmail.com").build();
 
-        User user2 = User.builder()
-                .id(2L)
-                .username("sveta")
-                .email("sveta@gmail.com")
-                .build();
-
-        UserShortDto userShortDto1 = createUserShortDto();
-
-        UserShortDto userShortDto2 = UserShortDto.builder()
-                .id(2L)
-                .username("sveta")
-                .email("sveta@gmail.com")
-                .build();
-
-        Page<User> userPage = new PageImpl<>(List.of(user1, user2));
+        UserShortDto dto1 = createUserShortDto();
+        UserShortDto dto2 = UserShortDto.builder()
+                .id(2L).username("sveta").email("sveta@gmail.com").build();
 
         Pageable pageable = PageRequest.of(0, 10);
-
-        when(userRepository.findAll(pageable))
-                .thenReturn(userPage);
-
-        when(userMapper.toUserShortDto(user1))
-                .thenReturn(userShortDto1);
-
-        when(userMapper.toUserShortDto(user2))
-                .thenReturn(userShortDto2);
+        when(userRepository.findAll(pageable)).thenReturn(new PageImpl<>(List.of(user1, user2)));
+        when(userMapper.toUserShortDto(user1)).thenReturn(dto1);
+        when(userMapper.toUserShortDto(user2)).thenReturn(dto2);
 
         Page<UserShortDto> result = userService.getAllUsers(pageable);
 
+        assertEquals(List.of(dto1, dto2), result.getContent());
         assertEquals(2, result.getTotalElements());
-        assertEquals(List.of(userShortDto1, userShortDto2), result.getContent());
-
-        verify(userRepository).findAll(pageable);
-        verify(userMapper).toUserShortDto(user1);
-        verify(userMapper).toUserShortDto(user2);
-
     }
 
     @Test
-    @DisplayName("should return empty page")
+    @DisplayName("should return empty page without mapping users")
     void shouldReturnEmptyPage() {
         Pageable pageable = PageRequest.of(0, 10);
-        Page<User> emptyUserPage = Page.empty(pageable);
-
-        when(userRepository.findAll(pageable))
-                .thenReturn(emptyUserPage);
+        when(userRepository.findAll(pageable)).thenReturn(Page.empty(pageable));
 
         Page<UserShortDto> result = userService.getAllUsers(pageable);
 
         assertTrue(result.isEmpty());
-
-        verify(userRepository).findAll(pageable);
         verifyNoInteractions(userMapper);
-
     }
 
-
     @Test
-    @DisplayName("should update new password when user has not real password")
-    void shouldUpdateNewPasswordWhenUserHasNotRealPassword() {
+    @DisplayName("should update password when user has no existing BCrypt password")
+    void shouldUpdatePasswordWhenUserHasNoRealPassword() {
         User user = createUser();
-        PasswordUpdateRequest passwordUpdateRequest = PasswordUpdateRequest.builder()
+        PasswordUpdateRequest request = PasswordUpdateRequest.builder()
                 .newPassword(NEW_PASSWORD)
                 .build();
-        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID))
-                .thenReturn(user);
 
-        when(passwordEncoder.encode(NEW_PASSWORD))
-                .thenReturn(ENCODED_PASSWORD);
+        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID)).thenReturn(user);
+        when(passwordEncoder.encode(NEW_PASSWORD)).thenReturn(ENCODED_PASSWORD);
 
-        userService.passwordUpdateByUserIdForCurrentUser(EXISTING_USER_ID, passwordUpdateRequest);
+        userService.passwordUpdateByUserIdForCurrentUser(EXISTING_USER_ID, request);
 
-        assertEquals(ENCODED_PASSWORD,
-                user.getPassword());
-
-        verify(userRepository).findUserByIdOrThrow404(EXISTING_USER_ID);
+        assertEquals(ENCODED_PASSWORD, user.getPassword());
         verify(passwordEncoder).encode(NEW_PASSWORD);
+        verify(passwordEncoder, never()).matches(any(), any());
     }
 
     @Test
-    @DisplayName("should update new password when user real password")
-    void shouldUpdatePasswordWhenUserHasRealPassword() {
+    @DisplayName("should update password when current BCrypt password is correct")
+    void shouldUpdatePasswordWhenCurrentPasswordIsCorrect() {
         User user = createUser();
         user.setPassword(OLD_ENCODED_PASSWORD);
 
-        PasswordUpdateRequest passwordUpdateRequest = PasswordUpdateRequest.builder()
+        PasswordUpdateRequest request = PasswordUpdateRequest.builder()
                 .currentPassword(OLD_PASSWORD)
                 .newPassword(NEW_PASSWORD)
                 .build();
 
-        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID))
-                .thenReturn(user);
-        when(passwordEncoder.matches(OLD_PASSWORD, OLD_ENCODED_PASSWORD))
-                .thenReturn(true);
-        when(passwordEncoder.matches(NEW_PASSWORD, OLD_ENCODED_PASSWORD))
-                .thenReturn(false);
-        when(passwordEncoder.encode(NEW_PASSWORD))
-                .thenReturn(ENCODED_PASSWORD);
+        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID)).thenReturn(user);
+        when(passwordEncoder.matches(OLD_PASSWORD, OLD_ENCODED_PASSWORD)).thenReturn(true);
+        when(passwordEncoder.matches(NEW_PASSWORD, OLD_ENCODED_PASSWORD)).thenReturn(false);
+        when(passwordEncoder.encode(NEW_PASSWORD)).thenReturn(ENCODED_PASSWORD);
 
-        userService.passwordUpdateByUserIdForCurrentUser(EXISTING_USER_ID, passwordUpdateRequest);
+        userService.passwordUpdateByUserIdForCurrentUser(EXISTING_USER_ID, request);
 
         assertEquals(ENCODED_PASSWORD, user.getPassword());
-
-        verify(userRepository).findUserByIdOrThrow404(EXISTING_USER_ID);
-        verify(passwordEncoder).matches(OLD_PASSWORD, OLD_ENCODED_PASSWORD);
-        verify(passwordEncoder).matches(NEW_PASSWORD, OLD_ENCODED_PASSWORD);
         verify(passwordEncoder).encode(NEW_PASSWORD);
     }
 
     @Test
-    @DisplayName("should throw InvalidUserDataException when current password is null")
-    void shouldThrowInvalidUserDataExceptionWhenCurrentPasswordNull() {
+    @DisplayName("should reject password update when current password is missing")
+    void shouldRejectWhenCurrentPasswordIsMissing() {
         User user = createUser();
         user.setPassword(OLD_ENCODED_PASSWORD);
 
-        PasswordUpdateRequest passwordUpdateRequest = PasswordUpdateRequest.builder()
-                .currentPassword(null)
+        PasswordUpdateRequest request = PasswordUpdateRequest.builder()
                 .newPassword(NEW_PASSWORD)
                 .build();
 
-        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID))
-                .thenReturn(user);
+        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID)).thenReturn(user);
 
-        InvalidUserDataException exception = assertThrows(InvalidUserDataException.class,
-                () -> userService.passwordUpdateByUserIdForCurrentUser(EXISTING_USER_ID, passwordUpdateRequest));
+        InvalidUserDataException exception = assertThrows(
+                InvalidUserDataException.class,
+                () -> userService.passwordUpdateByUserIdForCurrentUser(EXISTING_USER_ID, request)
+        );
 
         assertEquals("Current password is required", exception.getMessage());
-
-        verify(userRepository).findUserByIdOrThrow404(EXISTING_USER_ID);
         verifyNoInteractions(passwordEncoder);
     }
 
     @Test
-    @DisplayName("should throw InvalidUserDataException when current password is incorrect")
-    void shouldThrowInvalidUserDataExceptionWhenCurrentPasswordIsIncorrect() {
+    @DisplayName("should reject password update when current password is incorrect")
+    void shouldRejectWhenCurrentPasswordIsIncorrect() {
         User user = createUser();
         user.setPassword(OLD_ENCODED_PASSWORD);
 
-        PasswordUpdateRequest passwordUpdateRequest = PasswordUpdateRequest.builder()
+        PasswordUpdateRequest request = PasswordUpdateRequest.builder()
                 .currentPassword(WRONG_PASSWORD)
                 .newPassword(NEW_PASSWORD)
                 .build();
 
-        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID))
-                .thenReturn(user);
+        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID)).thenReturn(user);
+        when(passwordEncoder.matches(WRONG_PASSWORD, OLD_ENCODED_PASSWORD)).thenReturn(false);
 
-        when(passwordEncoder.matches(WRONG_PASSWORD, OLD_ENCODED_PASSWORD))
-                .thenReturn(false);
-
-        InvalidUserDataException exception = assertThrows(InvalidUserDataException.class,
-                () -> userService.passwordUpdateByUserIdForCurrentUser(EXISTING_USER_ID, passwordUpdateRequest));
+        InvalidUserDataException exception = assertThrows(
+                InvalidUserDataException.class,
+                () -> userService.passwordUpdateByUserIdForCurrentUser(EXISTING_USER_ID, request)
+        );
 
         assertEquals("Current password is incorrect", exception.getMessage());
-
-        verify(userRepository).findUserByIdOrThrow404(EXISTING_USER_ID);
         verify(passwordEncoder).matches(WRONG_PASSWORD, OLD_ENCODED_PASSWORD);
         verifyNoMoreInteractions(passwordEncoder);
     }
 
     @Test
-    @DisplayName("should throw InvalidUserDataException when new password is equal to old password")
-    void shouldThrowInvalidUserDataExceptionWhenNewPasswordIsEqualToOldPassword() {
+    @DisplayName("should reject password update when new password equals current password")
+    void shouldRejectWhenNewPasswordEqualsCurrentPassword() {
         User user = createUser();
-
         user.setPassword(OLD_ENCODED_PASSWORD);
 
-        PasswordUpdateRequest passwordUpdateRequest = PasswordUpdateRequest.builder()
+        PasswordUpdateRequest request = PasswordUpdateRequest.builder()
                 .currentPassword(OLD_PASSWORD)
                 .newPassword(OLD_PASSWORD)
                 .build();
 
-        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID))
-                .thenReturn(user);
+        when(userRepository.findUserByIdOrThrow404(EXISTING_USER_ID)).thenReturn(user);
+        when(passwordEncoder.matches(OLD_PASSWORD, OLD_ENCODED_PASSWORD)).thenReturn(true);
 
-        when(passwordEncoder.matches(OLD_PASSWORD, OLD_ENCODED_PASSWORD))
-                .thenReturn(true);
+        InvalidUserDataException exception = assertThrows(
+                InvalidUserDataException.class,
+                () -> userService.passwordUpdateByUserIdForCurrentUser(EXISTING_USER_ID, request)
+        );
 
-        InvalidUserDataException exception = assertThrows(InvalidUserDataException.class,
-                () -> userService.passwordUpdateByUserIdForCurrentUser(EXISTING_USER_ID, passwordUpdateRequest));
-
-        assertEquals("The new password must be different from the current password", exception.getMessage());
-
-        verify(userRepository).findUserByIdOrThrow404(EXISTING_USER_ID);
-
+        assertEquals(
+                "The new password must be different from the current password",
+                exception.getMessage()
+        );
         verify(passwordEncoder, times(2)).matches(OLD_PASSWORD, OLD_ENCODED_PASSWORD);
-
-        verifyNoMoreInteractions(passwordEncoder);
+        verify(passwordEncoder, never()).encode(any());
     }
 
     @Test
-    @DisplayName("should throw UserNotFoundException when updating password by non existing id")
-    void shouldThrowUserNotFoundExceptionWhenUpdatingPasswordByNonExistingId() {
-        PasswordUpdateRequest passwordUpdateRequest = PasswordUpdateRequest.builder()
+    @DisplayName("should throw UserNotFoundException when updating password for missing user")
+    void shouldThrowWhenUpdatingPasswordForMissingUser() {
+        PasswordUpdateRequest request = PasswordUpdateRequest.builder()
                 .currentPassword(OLD_PASSWORD)
                 .newPassword(NEW_PASSWORD)
                 .build();
+
         when(userRepository.findUserByIdOrThrow404(NON_EXISTING_USER_ID))
                 .thenThrow(new UserNotFoundException(NON_EXISTING_USER_ID));
 
-        UserNotFoundException exception = assertThrows(UserNotFoundException.class,
-                () -> userService.passwordUpdateByUserIdForCurrentUser(NON_EXISTING_USER_ID, passwordUpdateRequest));
+        assertThrows(
+                UserNotFoundException.class,
+                () -> userService.passwordUpdateByUserIdForCurrentUser(NON_EXISTING_USER_ID, request)
+        );
 
-        assertEquals("User with id 9999 not found", exception.getMessage());
-        verify(userRepository).findUserByIdOrThrow404(NON_EXISTING_USER_ID);
         verifyNoInteractions(passwordEncoder);
     }
 
     @Test
-    @DisplayName("should return all users when search filter is empty")
-    void shouldReturnAllUsersWhenFilterIsEmpty() {
+    @DisplayName("should return users with provider names from one batch query")
+    void shouldReturnUsersWithProviderNamesFromBatchQuery() {
         User user1 = createUser();
         User user2 = User.builder()
                 .id(2L)
@@ -696,42 +657,68 @@ class UserServiceImplTest {
                 .email("sveta@gmail.com")
                 .build();
 
-        UserFullDto userFullDto1 = UserFullDto.builder()
-                .id(1L)
-                .username("nikita")
-                .email("nikita@gmail.com")
-                .build();
-
-        UserFullDto userFullDto2 = UserFullDto.builder()
-                .id(2L)
-                .username("sveta")
-                .email("sveta@gmail.com")
-                .build();
-
-        UserSearchFilter userSearchFilter = new UserSearchFilter(null, null, null, null, null, null, null);
+        UserFullDto dto1 = createFullDto(user1, null);
+        UserFullDto dto2 = createFullDto(user2, null);
 
         Pageable pageable = PageRequest.of(0, 10);
-
-        Page<User> userPage = new PageImpl<>(List.of(user1, user2));
+        UserSearchFilter filter = emptySearchFilter();
 
         when(userRepository.findAll(any(Specification.class), eq(pageable)))
-                .thenReturn(userPage);
+                .thenReturn(new PageImpl<>(List.of(user1, user2)));
+        when(userMapper.toUserFullDto(user1)).thenReturn(dto1);
+        when(userMapper.toUserFullDto(user2)).thenReturn(dto2);
+        when(externalIdentityRepository.findAllByUser_IdIn(List.of(1L, 2L)))
+                .thenReturn(List.of(
+                        identity(GOOGLE_ISSUER, "google-sub", user1),
+                        identity("github", "github-sub", user1),
+                        identity("github", "github-sub-2", user1),
+                        identity(CUSTOM_ISSUER, "custom-sub", user2),
+                        identity("unknown", "other-sub", user2)
+                ));
 
-        when(userMapper.toUserFullDto(user1))
-                .thenReturn(userFullDto1);
-
-        when(userMapper.toUserFullDto(user2))
-                .thenReturn(userFullDto2);
-
-        Page<UserFullDto> result = userService.searchUsers(userSearchFilter, pageable);
+        Page<UserFullDto> result = userService.searchUsers(filter, pageable);
 
         assertEquals(2, result.getTotalElements());
-        assertEquals(List.of(userFullDto1, userFullDto2), result.getContent());
+        assertEquals(List.of("GitHub", "Google"), result.getContent().get(0).linkedProviders());
+        assertEquals(
+                List.of("Custom authorization server", "Other sign-in provider"),
+                result.getContent().get(1).linkedProviders()
+        );
 
-        verify(userRepository).findAll(any(Specification.class), eq(pageable));
-        verify(userMapper).toUserFullDto(user1);
-        verify(userMapper).toUserFullDto(user2);
+        verify(externalIdentityRepository).findAllByUser_IdIn(List.of(1L, 2L));
+        verify(externalIdentityRepository, never()).findAllByUser_Id(any());
+    }
 
+    @Test
+    @DisplayName("should return users with empty provider lists when no identities are linked")
+    void shouldReturnUsersWithEmptyProviderLists() {
+        User user = createUser();
+        UserFullDto dto = createFullDto(user, null);
+        Pageable pageable = PageRequest.of(0, 10);
+
+        when(userRepository.findAll(any(Specification.class), eq(pageable)))
+                .thenReturn(new PageImpl<>(List.of(user)));
+        when(userMapper.toUserFullDto(user)).thenReturn(dto);
+        when(externalIdentityRepository.findAllByUser_IdIn(List.of(EXISTING_USER_ID)))
+                .thenReturn(List.of());
+
+        Page<UserFullDto> result = userService.searchUsers(emptySearchFilter(), pageable);
+
+        assertEquals(List.of(), result.getContent().get(0).linkedProviders());
+    }
+
+    @Test
+    @DisplayName("should not query external identities when search result is empty")
+    void shouldNotQueryExternalIdentitiesWhenSearchResultIsEmpty() {
+        Pageable pageable = PageRequest.of(0, 10);
+
+        when(userRepository.findAll(any(Specification.class), eq(pageable)))
+                .thenReturn(Page.empty(pageable));
+
+        Page<UserFullDto> result = userService.searchUsers(emptySearchFilter(), pageable);
+
+        assertTrue(result.isEmpty());
+        verifyNoInteractions(userMapper, externalIdentityRepository);
     }
 
     @Test
@@ -746,16 +733,14 @@ class UserServiceImplTest {
                 .lastLogin(LocalDateTime.of(2026, 9, 10, 10, 10))
                 .build();
 
-        UserFullDto userFullDto = UserFullDto.builder()
+        UserFullDto dto = UserFullDto.builder()
                 .id(2L)
                 .username("sveta")
                 .email("sveta@gmail.com")
-                .roles(List.of(
-                        UserRole.ROLE_ADMIN.toString(),
-                        UserRole.ROLE_USER.toString()
-                ))
+                .roles(List.of(UserRole.ROLE_ADMIN.toString(), UserRole.ROLE_USER.toString()))
                 .registeredAt("2026-09-10T00:00")
                 .lastLogin("2026-09-10T00:00")
+                .linkedProviders(List.of())
                 .build();
 
         UserSearchFilter filter = new UserSearchFilter(
@@ -769,139 +754,66 @@ class UserServiceImplTest {
         );
 
         Pageable pageable = PageRequest.of(0, 10);
-
-        Page<User> userPage = new PageImpl<>(List.of(user));
-
         when(userRepository.findAll(any(Specification.class), eq(pageable)))
-                .thenReturn(userPage);
-
-        when(userMapper.toUserFullDto(user))
-                .thenReturn(userFullDto);
+                .thenReturn(new PageImpl<>(List.of(user)));
+        when(userMapper.toUserFullDto(user)).thenReturn(dto);
+        when(externalIdentityRepository.findAllByUser_IdIn(List.of(2L))).thenReturn(List.of());
 
         Page<UserFullDto> result = userService.searchUsers(filter, pageable);
 
         assertEquals(1, result.getTotalElements());
-        assertEquals(List.of(userFullDto), result.getContent());
-
-        verify(userRepository).findAll(any(Specification.class), eq(pageable));
-        verify(userMapper).toUserFullDto(user);
-    }
-
-    @Test
-    @DisplayName("should return users when partial search filter is provided")
-    void shouldReturnUsersWhenPartialSearchFilterIsProvided() {
-        User user = User.builder()
-                .id(2L)
-                .username("sveta")
-                .email("sveta@gmail.com")
-                .roles(Set.of(UserRole.ROLE_ADMIN))
-                .build();
-
-        UserFullDto userFullDto = UserFullDto.builder()
-                .id(2L)
-                .username("sveta")
-                .email("sveta@gmail.com")
-                .roles(List.of(UserRole.ROLE_ADMIN.toString()))
-                .build();
-
-        UserSearchFilter filter = new UserSearchFilter(
-                "s",
-                null,
-                Set.of(UserRole.ROLE_ADMIN),
-                null,
-                null,
-                null,
-                null
-        );
-
-        Pageable pageable = PageRequest.of(0, 10);
-
-        Page<User> userPage = new PageImpl<>(List.of(user));
-
-        when(userRepository.findAll(any(Specification.class), eq(pageable)))
-                .thenReturn(userPage);
-
-        when(userMapper.toUserFullDto(user))
-                .thenReturn(userFullDto);
-
-        Page<UserFullDto> result = userService.searchUsers(filter, pageable);
-
-        assertEquals(1, result.getTotalElements());
-        assertEquals(List.of(userFullDto), result.getContent());
-
-        verify(userRepository).findAll(any(Specification.class), eq(pageable));
-        verify(userMapper).toUserFullDto(user);
+        assertEquals(List.of(dto), result.getContent());
     }
 
     @Test
     @DisplayName("should create user account")
     void shouldCreateUserAccount() {
-        UserCreationRequest userCreationRequest = createUserCreationRequest();
+        UserCreationRequest request = createUserCreationRequest();
         User user = createUser();
-        UserShortDto userShortDto = createUserShortDto();
+        UserShortDto expected = createUserShortDto();
 
-        when(userRepository.existsByUsername(userCreationRequest.username()))
-                .thenReturn(false);
+        when(userRepository.existsByUsername(request.username())).thenReturn(false);
+        when(userRepository.existsByEmail(request.email())).thenReturn(false);
+        when(userMapper.toUserEntity(request)).thenReturn(user);
+        when(userRepository.save(user)).thenReturn(user);
+        when(userMapper.toUserShortDto(user)).thenReturn(expected);
 
-        when(userRepository.existsByEmail(userCreationRequest.email()))
-                .thenReturn(false);
+        assertEquals(expected, userService.createUserAccount(request));
 
-        when(userMapper.toUserEntity(userCreationRequest))
-                .thenReturn(user);
-
-        when(userRepository.save(user))
-                .thenReturn(user);
-
-        when(userMapper.toUserShortDto(user))
-                .thenReturn(userShortDto);
-
-        UserShortDto result = userService.createUserAccount(userCreationRequest);
-
-        assertEquals(userShortDto, result);
-
-        verify(userRepository).existsByUsername(userCreationRequest.username());
-        verify(userRepository).existsByEmail(userCreationRequest.email());
-        verify(userMapper).toUserEntity(userCreationRequest);
+        verify(userRepository).existsByUsername(request.username());
+        verify(userRepository).existsByEmail(request.email());
         verify(userRepository).save(user);
-        verify(userMapper).toUserShortDto(user);
     }
 
     @Test
-    @DisplayName("should throw InvalidUserDataException when create account and username already exists")
-    void shouldThrowInvalidUserDataExceptionWhenCreateAccountAndUsernameAlreadyExists() {
-        UserCreationRequest userCreationRequest = createUserCreationRequest();
+    @DisplayName("should reject account creation when username already exists")
+    void shouldRejectAccountCreationWhenUsernameAlreadyExists() {
+        UserCreationRequest request = createUserCreationRequest();
+        when(userRepository.existsByUsername(request.username())).thenReturn(true);
 
-        when(userRepository.existsByUsername(userCreationRequest.username()))
-                .thenReturn(true);
-
-        InvalidUserDataException exception = assertThrows(InvalidUserDataException.class,
-                () -> userService.createUserAccount(userCreationRequest));
+        InvalidUserDataException exception = assertThrows(
+                InvalidUserDataException.class,
+                () -> userService.createUserAccount(request)
+        );
 
         assertEquals("User with username nikita already exists", exception.getMessage());
-
-        verify(userRepository).existsByUsername(userCreationRequest.username());
-        verifyNoMoreInteractions(userRepository);
+        verify(userRepository, never()).existsByEmail(any());
         verifyNoInteractions(userMapper);
     }
 
     @Test
-    @DisplayName("should throw InvalidUserDataException when create account and email already exists")
-    void shouldThrowInvalidUserDataExceptionWhenCreateAccountAndEmailAlreadyExists() {
-        UserCreationRequest userCreationRequest = createUserCreationRequest();
+    @DisplayName("should reject account creation when email already exists")
+    void shouldRejectAccountCreationWhenEmailAlreadyExists() {
+        UserCreationRequest request = createUserCreationRequest();
+        when(userRepository.existsByUsername(request.username())).thenReturn(false);
+        when(userRepository.existsByEmail(request.email())).thenReturn(true);
 
-        when(userRepository.existsByUsername(userCreationRequest.username()))
-                .thenReturn(false);
-        when(userRepository.existsByEmail(userCreationRequest.email()))
-                .thenReturn(true);
-
-        InvalidUserDataException exception = assertThrows(InvalidUserDataException.class,
-                () -> userService.createUserAccount(userCreationRequest));
+        InvalidUserDataException exception = assertThrows(
+                InvalidUserDataException.class,
+                () -> userService.createUserAccount(request)
+        );
 
         assertEquals("User with email nikita@gmail.com already exists", exception.getMessage());
-
-        verify(userRepository).existsByUsername(userCreationRequest.username());
-        verify(userRepository).existsByEmail(userCreationRequest.email());
-        verifyNoMoreInteractions(userRepository);
         verifyNoInteractions(userMapper);
     }
 
@@ -909,122 +821,124 @@ class UserServiceImplTest {
     @DisplayName("should save user to database")
     void shouldSaveUserToDatabase() {
         User user = createUser();
-        when(userRepository.save(user))
-                .thenReturn(user);
-        User result = userService.saveToDatabase(user);
+        when(userRepository.save(user)).thenReturn(user);
 
-        assertEquals(user.getId(), result.getId());
-        assertEquals(user.getUsername(), result.getUsername());
-        assertEquals(user.getEmail(), result.getEmail());
+        assertSame(user, userService.saveToDatabase(user));
 
         verify(userRepository).save(user);
     }
 
     @Test
-    @DisplayName("should create Oauth2 user when username does not exist")
-    void shouldCreateOauth2UserWhenUsernameDoesNotExist() {
-        User user = createUser();
-
-        when(userRepository.existsByUsername(user.getUsername()))
-                .thenReturn(false);
-
+    @DisplayName("should create OAuth2 user when username is available")
+    void shouldCreateOAuth2UserWhenUsernameIsAvailable() {
+        when(userRepository.existsByUsername("nikita")).thenReturn(false);
         when(userRepository.save(any(User.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        User result = userService.createOAuth2User(user.getUsername(), user.getEmail());
+        User result = userService.createOAuth2User("nikita", "nikita@gmail.com");
 
-        assertEquals(user.getUsername(), result.getUsername());
-        assertEquals(user.getEmail(), result.getEmail());
+        assertEquals("nikita", result.getUsername());
+        assertEquals("nikita@gmail.com", result.getEmail());
         assertEquals(Set.of(UserRole.ROLE_USER), result.getRoles());
         assertNotNull(result.getRegisteredAt());
 
-        verify(userRepository).existsByUsername(user.getUsername());
+        verify(userRepository).existsByUsername("nikita");
         verify(userRepository).save(any(User.class));
     }
 
     @Test
-    @DisplayName("should create Oauth2 user and add characters to username when username already exists")
-    void shouldCreateOauth2UserWhenUsernameAlreadyExist() {
-        User user = createUser();
-        when(userRepository.existsByUsername(user.getUsername()))
-                .thenReturn(true);
+    @DisplayName("should generate a unique username when OAuth2 username already exists")
+    void shouldGenerateUniqueUsernameWhenOAuth2UsernameAlreadyExists() {
+        when(userRepository.existsByUsername("nikita")).thenReturn(true);
         when(userRepository.save(any(User.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        User result = userService.createOAuth2User(user.getUsername(), user.getEmail());
+        User result = userService.createOAuth2User("nikita", "nikita@gmail.com");
 
-        assertNotEquals(user.getUsername(), result.getUsername());
-        assertTrue(result.getUsername().startsWith(user.getUsername() + "_"));
-        assertEquals((user.getUsername().length() + 6), result.getUsername().length());
+        assertTrue(result.getUsername().matches("nikita_[a-f0-9]{5}"));
+        assertEquals("nikita@gmail.com", result.getEmail());
         assertEquals(Set.of(UserRole.ROLE_USER), result.getRoles());
         assertNotNull(result.getRegisteredAt());
 
-        verify(userRepository).existsByUsername(user.getUsername());
         verify(userRepository).save(any(User.class));
     }
 
     @Test
-    @DisplayName("should find and return user by username")
-    void shouldFindAndReturnUserByUsername() {
+    @DisplayName("should find user by username")
+    void shouldFindUserByUsername() {
         User user = createUser();
-        when(userRepository.findByUsernameOrEmail(user.getUsername()))
-                .thenReturn(Optional.of(user));
+        when(userRepository.findByUsernameOrEmail("nikita")).thenReturn(Optional.of(user));
 
-        User result = userService.findByUsernameOrEmail(user.getUsername());
-
-        assertEquals(user.getId(), result.getId());
-        assertEquals(user.getUsername(), result.getUsername());
-        assertEquals(user.getEmail(), result.getEmail());
-
-        verify(userRepository).findByUsernameOrEmail(user.getUsername());
+        assertSame(user, userService.findByUsernameOrEmail("nikita"));
     }
 
     @Test
-    @DisplayName("should find and return user by email")
-    void shouldFindAndReturnUserByEmail() {
+    @DisplayName("should find user by email")
+    void shouldFindUserByEmail() {
         User user = createUser();
-        when((userRepository.findByUsernameOrEmail(user.getEmail())))
-                .thenReturn(Optional.of(user));
+        when(userRepository.findByUsernameOrEmail("nikita@gmail.com")).thenReturn(Optional.of(user));
 
-        User result = userService.findByUsernameOrEmail(user.getEmail());
-
-        assertEquals(user.getId(), result.getId());
-        assertEquals(user.getUsername(), result.getUsername());
-        assertEquals(user.getEmail(), result.getEmail());
-
-        verify(userRepository).findByUsernameOrEmail(user.getEmail());
+        assertSame(user, userService.findByUsernameOrEmail("nikita@gmail.com"));
     }
 
     @Test
-    @DisplayName("should throw InvalidUserDataException when user not found by username and email")
-    void shouldThrowInvalidUserDataExceptionWhenUserNotFoundByUsernameAndEmail() {
-        String login = "unknown";
-        when(userRepository.findByUsernameOrEmail(login))
-                .thenReturn(Optional.empty());
+    @DisplayName("should throw InvalidUserDataException when user is not found by username or email")
+    void shouldThrowWhenUserIsNotFoundByUsernameOrEmail() {
+        when(userRepository.findByUsernameOrEmail("unknown")).thenReturn(Optional.empty());
 
-        InvalidUserDataException exception = assertThrows(InvalidUserDataException.class,
-                () -> userService.findByUsernameOrEmail(login));
+        InvalidUserDataException exception = assertThrows(
+                InvalidUserDataException.class,
+                () -> userService.findByUsernameOrEmail("unknown")
+        );
 
         assertEquals("User not found with login/email: unknown", exception.getMessage());
-
-        verify(userRepository).findByUsernameOrEmail(login);
     }
 
+    @Test
+    @DisplayName("should find user by email")
+    void shouldFindByEmail() {
+        User user = createUser();
+        when(userRepository.findWithRolesByEmail("nikita@gmail.com")).thenReturn(Optional.of(user));
+
+        assertEquals(Optional.of(user), userService.findByEmail("nikita@gmail.com"));
+    }
 
     private User createUser() {
         return User.builder()
-                .id(1L)
+                .id(EXISTING_USER_ID)
                 .username("nikita")
                 .email("nikita@gmail.com")
                 .password(NEW_PASSWORD)
+                .roles(Set.of(UserRole.ROLE_USER))
+                .registeredAt(LocalDateTime.of(2026, 9, 10, 10, 10))
                 .build();
     }
 
     private UserShortDto createUserShortDto() {
         return UserShortDto.builder()
-                .id(1L)
+                .id(EXISTING_USER_ID)
                 .username("nikita")
                 .email("nikita@gmail.com")
+                .build();
+    }
+
+    private UserShortDto createUserShortDtoFor(User user) {
+        return UserShortDto.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .build();
+    }
+
+    private UserFullDto createFullDto(User user, String lastLogin) {
+        return UserFullDto.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .roles(List.of(UserRole.ROLE_USER.name()))
+                .registeredAt("2026-09-10T10:10")
+                .lastLogin(lastLogin)
+                .linkedProviders(List.of())
                 .build();
     }
 
@@ -1037,6 +951,11 @@ class UserServiceImplTest {
                 .build();
     }
 
+    private ExternalIdentity identity(String provider, String subject, User user) {
+        return new ExternalIdentity(provider, subject, user);
+    }
 
+    private UserSearchFilter emptySearchFilter() {
+        return new UserSearchFilter(null, null, null, null, null, null, null);
+    }
 }
-

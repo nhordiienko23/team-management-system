@@ -3,6 +3,7 @@ package com.nba.user;
 
 import com.nba.core.exception.invalidData.InvalidUserDataException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -10,15 +11,25 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
+    private static final String GOOGLE_ISSUER = "https://accounts.google.com";
+    private static final String CUSTOM_AUTH_ISSUER = "http://localhost:9000";
+
+    @Value("${app.oauth2.custom-oidc-issuer:http://localhost:9000}")
+    private String customAuthIssuer = CUSTOM_AUTH_ISSUER;
+
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final ExternalIdentityRepository externalIdentityRepository;
 
     @Override
     public void validateUsernameIsFree(String username) {
@@ -59,6 +70,29 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public UserShortDto getUserProfileById(Long userId) {
         return userMapper.toUserShortDto(userRepository.findUserByIdOrThrow404(userId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AdminUserDetailDto getAdminUserDetailsById(Long userId) {
+        User user = userRepository.findUserByIdOrThrow404(userId);
+        UserFullDto details = userMapper.toUserFullDto(user);
+        List<String> linkedProviders = externalIdentityRepository.findAllByUser_Id(userId).stream()
+                .map(ExternalIdentity::getProvider)
+                .map(this::providerDisplayName)
+                .distinct()
+                .sorted()
+                .toList();
+
+        return new AdminUserDetailDto(
+                details.id(),
+                details.username(),
+                details.email(),
+                details.roles(),
+                details.registeredAt(),
+                details.lastLogin(),
+                linkedProviders
+        );
     }
 
     @Override
@@ -120,8 +154,50 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public Page<UserFullDto> searchUsers(UserSearchFilter filter,Pageable pageable) {
-        return userRepository.findAll(UserSpecification.buildQuery(filter),pageable)
+        Page<UserFullDto> users = userRepository.findAll(UserSpecification.buildQuery(filter),pageable)
                 .map(userMapper::toUserFullDto);
+
+        List<Long> userIds = users.getContent().stream()
+                .map(UserFullDto::id)
+                .toList();
+        if (userIds.isEmpty()) {
+            return users;
+        }
+
+        Map<Long, List<String>> providersByUserId = externalIdentityRepository
+                .findAllByUser_IdIn(userIds).stream()
+                .collect(Collectors.groupingBy(
+                        identity -> identity.getUser().getId(),
+                        Collectors.mapping(
+                                identity -> providerDisplayName(identity.getProvider()),
+                                Collectors.collectingAndThen(
+                                        Collectors.toSet(),
+                                        names -> names.stream().sorted().toList()
+                                )
+                        )
+                ));
+
+        return users.map(user -> new UserFullDto(
+                user.id(),
+                user.username(),
+                user.email(),
+                user.roles(),
+                user.registeredAt(),
+                user.lastLogin(),
+                providersByUserId.getOrDefault(user.id(), List.of())
+        ));
+    }
+
+    private String providerDisplayName(String provider) {
+        if (customAuthIssuer.equals(provider)) {
+            return "Custom authorization server";
+        }
+        return switch (provider) {
+            case "google", GOOGLE_ISSUER -> "Google";
+            case "github" -> "GitHub";
+            case "my-custom-auth", CUSTOM_AUTH_ISSUER -> "Custom authorization server";
+            default -> "Other sign-in provider";
+        };
     }
 
     @Override

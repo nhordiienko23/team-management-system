@@ -11,6 +11,7 @@ public record UserFullDto(
         String email,
         List<String> roles,
         String registeredAt,
-        String lastLogin
+        String lastLogin,
+        List<String> linkedProviders
 ) {
 }

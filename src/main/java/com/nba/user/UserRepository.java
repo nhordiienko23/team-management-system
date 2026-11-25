@@ -36,6 +36,9 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     Optional<User> findWithRolesByEmail(String email);
 
     @EntityGraph(attributePaths = "roles")
+    List<User> findWithRolesByEmailIgnoreCase(String email);
+
+    @EntityGraph(attributePaths = "roles")
     @Query("select u from User u where u.username = :login or u.email= :login")
     Optional<User> findByUsernameOrEmail(@Param("login") String login);
 

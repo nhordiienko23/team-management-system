@@ -20,6 +20,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -81,7 +82,7 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
                 createAuthenticatedUser("nikita_test", "nikita@gmail.com");
 
         mockMvc.perform(
-                        delete("/api/users/me")
+                        delete("/api/users/me").with(csrf())
                                 .with(authentication(createAuthentication(userDetails)))
                 )
                 .andExpect(status().isNoContent());
@@ -94,7 +95,7 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
     void shouldReturnUnauthorizedWhenUserDeletingUnauthorizedUser() throws Exception {
 
         mockMvc.perform(
-                        delete("/api/users/me")
+                        delete("/api/users/me").with(csrf())
                 )
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message")
@@ -114,7 +115,7 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
                 .build();
 
         mockMvc.perform(
-                        patch("/api/users/me")
+                        patch("/api/users/me").with(csrf())
                                 .with(authentication(createAuthentication(userDetails)))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
@@ -144,7 +145,7 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
                 .build();
 
         mockMvc.perform(
-                        patch("/api/users/me")
+                        patch("/api/users/me").with(csrf())
                                 .with(authentication(createAuthentication(userDetails)))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
@@ -175,7 +176,7 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
                 .build();
 
         mockMvc.perform(
-                        patch("/api/users/me")
+                        patch("/api/users/me").with(csrf())
                                 .with(authentication(createAuthentication(userDetails)))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
@@ -206,7 +207,7 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
                 .build();
 
         mockMvc.perform(
-                        patch("/api/users/me")
+                        patch("/api/users/me").with(csrf())
                                 .with(authentication(createAuthentication(userDetails)))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
@@ -229,7 +230,7 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
                 .build();
 
         mockMvc.perform(
-                        patch("/api/users/me")
+                        patch("/api/users/me").with(csrf())
                                 .with(authentication(createAuthentication(userDetails)))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
@@ -253,7 +254,7 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
                 .build();
 
         mockMvc.perform(
-                        patch("/api/users/me")
+                        patch("/api/users/me").with(csrf())
                                 .with(authentication(createAuthentication(userDetails)))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
@@ -272,7 +273,7 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
                 .build();
 
         mockMvc.perform(
-                        patch("/api/users/me")
+                        patch("/api/users/me").with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -295,7 +296,7 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
                 .build();
 
         mockMvc.perform(
-                        patch("/api/users/me/update-password")
+                        patch("/api/users/me/update-password").with(csrf())
                                 .with(authentication(createAuthentication(userDetails)))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
@@ -324,7 +325,7 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
                 .build();
 
         mockMvc.perform(
-                        patch("/api/users/me/update-password")
+                        patch("/api/users/me/update-password").with(csrf())
                                 .with(authentication(createAuthentication(userDetails)))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
@@ -346,7 +347,7 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
                 .build();
 
         mockMvc.perform(
-                        patch("/api/users/me/update-password")
+                        patch("/api/users/me/update-password").with(csrf())
                                 .with(authentication(createAuthentication(userDetails)))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
@@ -368,7 +369,7 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
                 .build();
 
         mockMvc.perform(
-                        patch("/api/users/me/update-password")
+                        patch("/api/users/me/update-password").with(csrf())
                                 .with(authentication(createAuthentication(userDetails)))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
@@ -389,7 +390,7 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
                 .build();
 
         mockMvc.perform(
-                        patch("/api/users/me/update-password")
+                        patch("/api/users/me/update-password").with(csrf())
                                 .with(authentication(createAuthentication(userDetails)))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
@@ -410,7 +411,7 @@ class UserControllerIntegrationTest extends AbstractIntegrationTest {
                 .build();
 
         mockMvc.perform(
-                        patch("/api/users/me/update-password")
+                        patch("/api/users/me/update-password").with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )

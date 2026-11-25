@@ -19,15 +19,39 @@ public class CustomUserDetails implements UserDetails, OAuth2User, OidcUser {
     private final User user;
 
     private final Map<String, Object> attributes;
+    private final Map<String, Object> claims;
+    private final OidcIdToken idToken;
+    private final OidcUserInfo userInfo;
 
     public CustomUserDetails(User user) {
-        this.user = user;
-        this.attributes=null;
+        this(user, null, null, null, null);
     }
 
     public CustomUserDetails(User user, Map<String, Object> attributes) {
+        this(user, attributes, attributes, null, null);
+    }
+
+    public CustomUserDetails(User user, OidcUser oidcUser) {
+        this(
+                user,
+                oidcUser.getAttributes(),
+                oidcUser.getClaims(),
+                oidcUser.getIdToken(),
+                oidcUser.getUserInfo()
+        );
+    }
+
+    private CustomUserDetails(
+            User user,
+            Map<String, Object> attributes,
+            Map<String, Object> claims,
+            OidcIdToken idToken,
+            OidcUserInfo userInfo) {
         this.user = user;
         this.attributes = attributes;
+        this.claims = claims;
+        this.idToken = idToken;
+        this.userInfo = userInfo;
     }
 
     @Override
@@ -75,7 +99,7 @@ public class CustomUserDetails implements UserDetails, OAuth2User, OidcUser {
 
     @Override
     public Map<String, Object> getClaims() {
-        return attributes;
+        return claims;
     }
 
 
@@ -87,11 +111,11 @@ public class CustomUserDetails implements UserDetails, OAuth2User, OidcUser {
 
     @Override
     public OidcUserInfo getUserInfo() {
-        return null;
+        return userInfo;
     }
 
     @Override
     public OidcIdToken getIdToken() {
-        return null;
+        return idToken;
     }
 }

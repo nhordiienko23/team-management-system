@@ -18,6 +18,8 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.nullValue;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -32,6 +34,9 @@ public class AdminUserControllerIntegrationTest extends AbstractIntegrationTest 
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ExternalIdentityRepository externalIdentityRepository;
 
     @Autowired
     private MockMvc mockMvc;
@@ -99,6 +104,45 @@ public class AdminUserControllerIntegrationTest extends AbstractIntegrationTest 
                 .andExpect(status().isForbidden());
     }
 
+    @Test
+    void shouldForbidRegularUserFromSearchingViewingAndUpdatingUsers() throws Exception {
+        CustomUserDetails regularUser = createAuthenticatedUser(
+                "regular_user_admin_routes",
+                "regular_user_admin_routes@gmail.com",
+                Set.of(UserRole.ROLE_USER)
+        );
+        User targetUser = createAndSaveUserToDatabase(
+                "admin_route_target",
+                "admin_route_target@gmail.com",
+                Set.of(UserRole.ROLE_USER)
+        );
+
+        mockMvc.perform(
+                        get("/api/admin/users/search")
+                                .with(authentication(createAuthentication(regularUser)))
+                )
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(
+                        get("/api/admin/users/{userId}", targetUser.getId())
+                                .with(authentication(createAuthentication(regularUser)))
+                )
+                .andExpect(status().isForbidden());
+
+        UserUpdateRequest updateRequest = UserUpdateRequest.builder()
+                .username("unauthorized_update")
+                .build();
+        mockMvc.perform(
+                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                                .patch("/api/admin/users/{userId}", targetUser.getId())
+                                .with(csrf())
+                                .with(authentication(createAuthentication(regularUser)))
+                                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(updateRequest))
+                )
+                .andExpect(status().isForbidden());
+    }
+
 
     // ============================================================
     // GET /api/admin/users/search
@@ -131,6 +175,9 @@ public class AdminUserControllerIntegrationTest extends AbstractIntegrationTest 
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content[0].roles").isArray())
+                .andExpect(jsonPath("$.content[0].registeredAt").exists())
+                .andExpect(jsonPath("$.content[0].linkedProviders").isArray())
                 .andExpect(jsonPath("$.content[*].username")
                         .value(hasItem("search_user_1")))
                 .andExpect(jsonPath("$.content[*].username")
@@ -266,8 +313,18 @@ public class AdminUserControllerIntegrationTest extends AbstractIntegrationTest 
         User user = createAndSaveUserToDatabase(
                 "target_user",
                 "target_user@gmail.com",
-                Set.of(UserRole.ROLE_USER)
+                Set.of(UserRole.ROLE_USER, UserRole.ROLE_ADMIN)
         );
+        user.setRegisteredAt(LocalDateTime.of(2026, 9, 10, 10, 10));
+        user.setLastLogin(null);
+        externalIdentityRepository.save(new ExternalIdentity(
+                "https://accounts.google.com", "google-private-subject", user));
+        externalIdentityRepository.save(new ExternalIdentity(
+                "github", "github-private-subject", user));
+        externalIdentityRepository.save(new ExternalIdentity(
+                "http://localhost:9000", "custom-private-subject", user));
+        externalIdentityRepository.save(new ExternalIdentity(
+                "https://unknown.example/issuer", "unknown-private-subject", user));
 
         mockMvc.perform(
                         get("/api/admin/users/{userId}", user.getId())
@@ -276,7 +333,28 @@ public class AdminUserControllerIntegrationTest extends AbstractIntegrationTest 
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(user.getId()))
                 .andExpect(jsonPath("$.username").value("target_user"))
-                .andExpect(jsonPath("$.email").value("target_user@gmail.com"));
+                .andExpect(jsonPath("$.email").value("target_user@gmail.com"))
+                .andExpect(jsonPath("$.roles", hasItem("ROLE_ADMIN")))
+                .andExpect(jsonPath("$.registeredAt").value("2026-09-10T10:10"))
+                .andExpect(jsonPath("$.lastLoginAt").value(nullValue()))
+                .andExpect(jsonPath("$.linkedProviders.length()").value(4))
+                .andExpect(jsonPath("$.linkedProviders", hasItem("Google")))
+                .andExpect(jsonPath("$.linkedProviders", hasItem("GitHub")))
+                .andExpect(jsonPath("$.linkedProviders", hasItem("Custom authorization server")))
+                .andExpect(jsonPath("$.linkedProviders", hasItem("Other sign-in provider")))
+                .andExpect(jsonPath("$.subject").doesNotExist())
+                .andExpect(jsonPath("$.accessToken").doesNotExist())
+                .andExpect(jsonPath("$.refreshToken").doesNotExist());
+
+        mockMvc.perform(
+                        get("/api/admin/users/search")
+                                .param("username", "target_user")
+                                .with(authentication(createAuthentication(adminDetails)))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].roles", hasItem("ROLE_ADMIN")))
+                .andExpect(jsonPath("$.content[0].linkedProviders.length()").value(4))
+                .andExpect(jsonPath("$.content[0].linkedProviders", hasItem("Google")));
     }
 
 
@@ -344,7 +422,7 @@ public class AdminUserControllerIntegrationTest extends AbstractIntegrationTest 
 
         mockMvc.perform(
                         org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                                .patch("/api/admin/users/{userId}", user.getId())
+                                .patch("/api/admin/users/{userId}", user.getId()).with(csrf())
                                 .with(authentication(createAuthentication(adminDetails)))
                                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                                 .content(json)
@@ -388,12 +466,74 @@ public class AdminUserControllerIntegrationTest extends AbstractIntegrationTest 
 
         mockMvc.perform(
                         org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                                .patch("/api/admin/users/{userId}", user.getId())
+                                .patch("/api/admin/users/{userId}", user.getId()).with(csrf())
                                 .with(authentication(createAuthentication(adminDetails)))
                                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                                 .content(json)
                 )
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(
+                        "Please enter a valid email address, like name@example.com."
+                ));
+    }
+
+    @Test
+    void shouldRejectBlankEmailWhenItIsSuppliedInPatch() throws Exception {
+        CustomUserDetails adminDetails = createAuthenticatedUser(
+                "blank_patch_email_admin",
+                "blank_patch_email_admin@gmail.com",
+                Set.of(UserRole.ROLE_ADMIN)
+        );
+        User user = createAndSaveUserToDatabase(
+                "blank_patch_email_user",
+                "blank_patch_email_user@gmail.com",
+                Set.of(UserRole.ROLE_USER)
+        );
+        UserUpdateRequest request = UserUpdateRequest.builder()
+                .email("")
+                .build();
+
+        mockMvc.perform(
+                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                                .patch("/api/admin/users/{userId}", user.getId()).with(csrf())
+                                .with(authentication(createAuthentication(adminDetails)))
+                                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Please enter your email address."));
+
+        org.assertj.core.api.Assertions.assertThat(userRepository.findById(user.getId()).orElseThrow().getEmail())
+                .isEqualTo("blank_patch_email_user@gmail.com");
+    }
+
+
+    @Test
+    void shouldAllowPatchWhenEmailIsOmitted() throws Exception {
+        CustomUserDetails adminDetails = createAuthenticatedUser(
+                "patch_without_email_admin",
+                "patch_without_email_admin@gmail.com",
+                Set.of(UserRole.ROLE_ADMIN)
+        );
+        User user = createAndSaveUserToDatabase(
+                "patch_without_email_user",
+                "patch_without_email_user@gmail.com",
+                Set.of(UserRole.ROLE_USER)
+        );
+        UserUpdateRequest request = UserUpdateRequest.builder()
+                .username("patch_without_email_updated")
+                .build();
+
+        mockMvc.perform(
+                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                                .patch("/api/admin/users/{userId}", user.getId()).with(csrf())
+                                .with(authentication(createAuthentication(adminDetails)))
+                                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value("patch_without_email_updated"))
+                .andExpect(jsonPath("$.email").value("patch_without_email_user@gmail.com"));
     }
 
 
@@ -426,7 +566,7 @@ public class AdminUserControllerIntegrationTest extends AbstractIntegrationTest 
 
         mockMvc.perform(
                         org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                                .patch("/api/admin/users/{userId}", targetUser.getId())
+                                .patch("/api/admin/users/{userId}", targetUser.getId()).with(csrf())
                                 .with(authentication(createAuthentication(adminDetails)))
                                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                                 .content(json)
@@ -464,7 +604,7 @@ public class AdminUserControllerIntegrationTest extends AbstractIntegrationTest 
 
         mockMvc.perform(
                         org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                                .patch("/api/admin/users/{userId}", targetUser.getId())
+                                .patch("/api/admin/users/{userId}", targetUser.getId()).with(csrf())
                                 .with(authentication(createAuthentication(adminDetails)))
                                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                                 .content(json)
@@ -492,7 +632,7 @@ public class AdminUserControllerIntegrationTest extends AbstractIntegrationTest 
 
         mockMvc.perform(
                         org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                                .patch("/api/admin/users/{userId}", nonExistingUserId)
+                                .patch("/api/admin/users/{userId}", nonExistingUserId).with(csrf())
                                 .with(authentication(createAuthentication(adminDetails)))
                                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                                 .content(json)
@@ -522,7 +662,7 @@ public class AdminUserControllerIntegrationTest extends AbstractIntegrationTest 
 
         mockMvc.perform(
                         org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                                .delete("/api/admin/users/{userId}", targetUser.getId())
+                                .delete("/api/admin/users/{userId}", targetUser.getId()).with(csrf())
                                 .with(authentication(createAuthentication(adminDetails)))
                 )
                 .andExpect(status().isOk())
@@ -550,7 +690,7 @@ public class AdminUserControllerIntegrationTest extends AbstractIntegrationTest 
 
         mockMvc.perform(
                         org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                                .delete("/api/admin/users/{userId}", adminId)
+                                .delete("/api/admin/users/{userId}", adminId).with(csrf())
                                 .with(authentication(createAuthentication(adminDetails)))
                 )
                 .andExpect(status().isBadRequest())
@@ -577,7 +717,7 @@ public class AdminUserControllerIntegrationTest extends AbstractIntegrationTest 
 
         mockMvc.perform(
                         org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                                .delete("/api/admin/users/{userId}", nonExistingUserId)
+                                .delete("/api/admin/users/{userId}", nonExistingUserId).with(csrf())
                                 .with(authentication(createAuthentication(adminDetails)))
                 )
                 .andExpect(status().isNotFound());
@@ -601,7 +741,7 @@ public class AdminUserControllerIntegrationTest extends AbstractIntegrationTest 
 
         mockMvc.perform(
                         org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                                .delete("/api/admin/users/{userId}", targetUser.getId())
+                                .delete("/api/admin/users/{userId}", targetUser.getId()).with(csrf())
                                 .with(authentication(createAuthentication(userDetails)))
                 )
                 .andExpect(status().isForbidden());
@@ -630,14 +770,14 @@ public class AdminUserControllerIntegrationTest extends AbstractIntegrationTest 
                 .username("new_user")
                 .password("password123")
                 .email("new_user@gmail.com")
-                .roles(Set.of(UserRole.ROLE_USER))
+                .roles(Set.of(UserRole.ROLE_USER, UserRole.ROLE_ADMIN))
                 .build();
 
         String json = objectMapper.writeValueAsString(request);
 
         mockMvc.perform(
                         org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                                .post("/api/admin/users")
+                                .post("/api/admin/users").with(csrf())
                                 .with(authentication(createAuthentication(adminDetails)))
                                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                                 .content(json)
@@ -654,7 +794,7 @@ public class AdminUserControllerIntegrationTest extends AbstractIntegrationTest 
                 .isEqualTo("new_user@gmail.com");
 
         org.assertj.core.api.Assertions.assertThat(createdUser.getRoles())
-                .containsExactly(UserRole.ROLE_USER);
+                .containsExactlyInAnyOrder(UserRole.ROLE_USER, UserRole.ROLE_ADMIN);
 
         org.assertj.core.api.Assertions.assertThat(
                         passwordEncoder.matches(
@@ -692,7 +832,7 @@ public class AdminUserControllerIntegrationTest extends AbstractIntegrationTest 
 
         mockMvc.perform(
                         org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                                .post("/api/admin/users")
+                                .post("/api/admin/users").with(csrf())
                                 .with(authentication(createAuthentication(adminDetails)))
                                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                                 .content(json)
@@ -729,7 +869,7 @@ public class AdminUserControllerIntegrationTest extends AbstractIntegrationTest 
 
         mockMvc.perform(
                         org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                                .post("/api/admin/users")
+                                .post("/api/admin/users").with(csrf())
                                 .with(authentication(createAuthentication(adminDetails)))
                                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                                 .content(json)
@@ -760,14 +900,19 @@ public class AdminUserControllerIntegrationTest extends AbstractIntegrationTest 
 
         mockMvc.perform(
                         org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                                .post("/api/admin/users")
+                                .post("/api/admin/users").with(csrf())
                                 .with(authentication(createAuthentication(adminDetails)))
                                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                                 .content(json)
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Validation Failed"))
-                .andExpect(jsonPath("$.message").exists());
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.allOf(
+                        org.hamcrest.Matchers.containsString("Please enter your username."),
+                        org.hamcrest.Matchers.containsString("Please enter your password."),
+                        org.hamcrest.Matchers.containsString("Please enter a valid email address, like name@example.com."),
+                        org.hamcrest.Matchers.containsString("Please select at least one role.")
+                )));
     }
 
 
@@ -791,7 +936,7 @@ public class AdminUserControllerIntegrationTest extends AbstractIntegrationTest 
 
         mockMvc.perform(
                         org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                                .post("/api/admin/users")
+                                .post("/api/admin/users").with(csrf())
                                 .with(authentication(createAuthentication(userDetails)))
                                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                                 .content(json)
@@ -826,7 +971,7 @@ public class AdminUserControllerIntegrationTest extends AbstractIntegrationTest 
 
         mockMvc.perform(
                         org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                                .patch("/api/admin/users/{userId}/updateUserPassword", targetUser.getId())
+                                .patch("/api/admin/users/{userId}/updateUserPassword", targetUser.getId()).with(csrf())
                                 .with(authentication(createAuthentication(adminDetails)))
                                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                                 .content(json)
@@ -867,7 +1012,7 @@ public class AdminUserControllerIntegrationTest extends AbstractIntegrationTest 
 
         mockMvc.perform(
                         org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                                .patch("/api/admin/users/{userId}/updateUserPassword", nonExistingUserId)
+                                .patch("/api/admin/users/{userId}/updateUserPassword", nonExistingUserId).with(csrf())
                                 .with(authentication(createAuthentication(adminDetails)))
                                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                                 .content(json)
@@ -898,7 +1043,7 @@ public class AdminUserControllerIntegrationTest extends AbstractIntegrationTest 
 
         mockMvc.perform(
                         org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                                .patch("/api/admin/users/{userId}/updateUserPassword", targetUser.getId())
+                                .patch("/api/admin/users/{userId}/updateUserPassword", targetUser.getId()).with(csrf())
                                 .with(authentication(createAuthentication(adminDetails)))
                                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                                 .content(json)
@@ -931,7 +1076,7 @@ public class AdminUserControllerIntegrationTest extends AbstractIntegrationTest 
 
         mockMvc.perform(
                         org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                                .patch("/api/admin/users/{userId}/updateUserPassword", targetUser.getId())
+                                .patch("/api/admin/users/{userId}/updateUserPassword", targetUser.getId()).with(csrf())
                                 .with(authentication(createAuthentication(userDetails)))
                                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                                 .content(json)

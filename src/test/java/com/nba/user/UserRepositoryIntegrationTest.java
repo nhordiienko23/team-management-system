@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -30,6 +31,27 @@ class UserRepositoryIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ExternalIdentityRepository externalIdentityRepository;
+
+    @Test
+    void shouldPreventOneProviderSubjectFromBeingLinkedToMultipleUsers() {
+        User firstUser = userRepository.save(createUser(
+                "first_external_user",
+                "first-external@example.com",
+                Set.of(UserRole.ROLE_USER)));
+        User secondUser = userRepository.save(createUser(
+                "second_external_user",
+                "second-external@example.com",
+                Set.of(UserRole.ROLE_USER)));
+        externalIdentityRepository.saveAndFlush(
+                new ExternalIdentity("github", "123456", firstUser));
+
+        assertThatThrownBy(() -> externalIdentityRepository.saveAndFlush(
+                new ExternalIdentity("github", "123456", secondUser)))
+                .isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class);
+    }
 
     @Test
     void shouldFindAllUsersWithPagination() {

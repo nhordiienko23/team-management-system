@@ -35,6 +35,7 @@ public class UserMapperImpl implements UserMapper {
                 .lastLogin((user.getLastLogin() != null)
                         ? user.getLastLogin().toString()
                         : null)
+                .linkedProviders(java.util.List.of())
                 .build();
     }
 

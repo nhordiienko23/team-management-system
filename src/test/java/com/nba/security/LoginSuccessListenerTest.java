@@ -64,6 +64,27 @@ class LoginSuccessListenerTest {
         verifyNoInteractions(userRepository);
     }
 
+    @Test
+    void ignoresSuccessWithNonCustomPrincipal() {
+        listener.onAuthenticationSuccess(new AuthenticationSuccessEvent(
+                new UsernamePasswordAuthenticationToken("plain-principal", null)
+        ));
+
+        verifyNoInteractions(userRepository);
+    }
+
+    @Test
+    void ignoresSuccessWhenPersistedUserNoLongerExists() {
+        CustomUserDetails principal = new CustomUserDetails(newUser());
+        when(userRepository.findById(42L)).thenReturn(Optional.empty());
+
+        listener.onAuthenticationSuccess(new AuthenticationSuccessEvent(
+                new UsernamePasswordAuthenticationToken(principal, null)
+        ));
+
+        verify(userRepository).findById(42L);
+    }
+
     private void assertLastLoginRecorded(CustomUserDetails principal) {
         User persistedUser = newUser();
         when(userRepository.findById(persistedUser.getId())).thenReturn(Optional.of(persistedUser));

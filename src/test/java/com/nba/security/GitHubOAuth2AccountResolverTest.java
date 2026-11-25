@@ -18,6 +18,7 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.time.Instant;
 import java.util.List;
@@ -143,6 +144,66 @@ class GitHubOAuth2AccountResolverTest {
         verify(gitHubEmailClient, never()).findVerifiedPrimaryEmail(any());
     }
 
+    @Test
+    void rejectsWrongOAuthRegistrationAndNonPositiveOrFractionalIds() {
+        OAuth2UserRequest wrongRegistration = wrongRegistrationRequest();
+
+        assertThatThrownBy(() -> resolver.resolve(wrongRegistration, githubUser(123456L, null)))
+                .isInstanceOf(OAuth2AuthenticationException.class);
+        assertThatThrownBy(() -> resolver.resolve(request(), githubUser(0L, null)))
+                .isInstanceOf(OAuth2AuthenticationException.class);
+        assertThatThrownBy(() -> resolver.resolve(request(), githubUser(-1L, null)))
+                .isInstanceOf(OAuth2AuthenticationException.class);
+        assertThatThrownBy(() -> resolver.resolve(request(), githubUser(123.45D, null)))
+                .isInstanceOf(OAuth2AuthenticationException.class);
+
+        verify(gitHubEmailClient, never()).findVerifiedPrimaryEmail(any());
+    }
+
+    @Test
+    void mapsIdentityStorageConflictToGenericAuthenticationFailure() {
+        ExternalIdentityService conflictingService = org.mockito.Mockito.mock(ExternalIdentityService.class);
+        when(conflictingService.resolve(
+                org.mockito.ArgumentMatchers.eq("github"),
+                org.mockito.ArgumentMatchers.eq("123456"),
+                any(),
+                org.mockito.ArgumentMatchers.anyString()))
+                .thenThrow(new DataIntegrityViolationException("conflict"));
+        GitHubOAuth2AccountResolver conflictingResolver =
+                new GitHubOAuth2AccountResolver(conflictingService, gitHubEmailClient);
+
+        assertThatThrownBy(() -> conflictingResolver.resolve(
+                request(),
+                githubUser(123456L, null)))
+                .isInstanceOf(OAuth2AuthenticationException.class)
+                .hasMessage("External authentication failed");
+    }
+
+    @Test
+    void fallsBackToLoginNameWhenDisplayNameIsMissing() {
+        ExternalIdentityService mockService = org.mockito.Mockito.mock(ExternalIdentityService.class);
+        User resolvedUser = user(9L, "person@example.com");
+        when(mockService.resolve(
+                org.mockito.ArgumentMatchers.eq("github"),
+                org.mockito.ArgumentMatchers.eq("123456"),
+                any(),
+                org.mockito.ArgumentMatchers.eq("sample-login")))
+                .thenReturn(resolvedUser);
+        GitHubOAuth2AccountResolver loginResolver =
+                new GitHubOAuth2AccountResolver(mockService, gitHubEmailClient);
+
+        Map<String, Object> attributes = new java.util.HashMap<>();
+        attributes.put("id", 123456L);
+        attributes.put("login", "sample-login");
+        DefaultOAuth2User loginOnlyUser = new DefaultOAuth2User(
+                List.of(new SimpleGrantedAuthority("SCOPE_read:user")),
+                attributes,
+                "id"
+        );
+
+        assertThat(loginResolver.resolve(request(), loginOnlyUser)).isSameAs(resolvedUser);
+    }
+
     private User user(Long id, String email) {
         return User.builder()
                 .id(id)
@@ -186,6 +247,27 @@ class GitHubOAuth2AccountResolverTest {
                 issuedAt,
                 issuedAt.plusSeconds(3600),
                 Set.of("read:user", "user:email")
+        );
+        return new OAuth2UserRequest(registration, accessToken);
+    }
+
+    private OAuth2UserRequest wrongRegistrationRequest() {
+        ClientRegistration registration = ClientRegistration.withRegistrationId("google")
+                .clientId("test-client")
+                .clientSecret("test-secret")
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .redirectUri("http://localhost/login/oauth2/code/google")
+                .authorizationUri("https://accounts.google.com/o/oauth2/auth")
+                .tokenUri("https://oauth2.googleapis.com/token")
+                .userInfoUri("https://openidconnect.googleapis.com/v1/userinfo")
+                .userNameAttributeName("sub")
+                .clientName("Google")
+                .build();
+        OAuth2AccessToken accessToken = new OAuth2AccessToken(
+                OAuth2AccessToken.TokenType.BEARER,
+                "test-access-token",
+                Instant.parse("2026-01-01T00:00:00Z"),
+                Instant.parse("2026-01-01T01:00:00Z")
         );
         return new OAuth2UserRequest(registration, accessToken);
     }

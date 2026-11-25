@@ -1,334 +1,216 @@
 # Team Management System
 
-A Spring Boot backend application for managing professional sports teams, players, coaches, and users. The REST API implements role-based access control, allowing administrators to manage teams, players, coaches, users, team rosters, and player/coach transfers, while regular users have read access to sports data and can manage their own profiles. Players and coaches can be retrieved both independently and through their associated teams, including rosters and coaching staff. The application also uses OAuth2/OIDC authentication, Spring Data JPA Specifications for dynamic filtering, pagination, Liquibase migrations, centralized exception handling, AOP-based audit logging, Swagger/OpenAPI, and integration testing with Testcontainers and PostgreSQL.
+![Java 21](https://img.shields.io/badge/Java-21-007396)
+![Spring Boot 3](https://img.shields.io/badge/Spring_Boot-3-6DB33F)
+![React](https://img.shields.io/badge/React-18%2B-61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6)
+![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-4169E1)
 
-## Running the application
+A full-stack application for managing professional basketball teams, players, coaches, and users. It provides role-based access control, team roster and transfer management, dynamic search, and OAuth2/OIDC authentication.
 
-The backend and React frontend run as separate development processes. Docker
-Compose currently defines the PostgreSQL database only; it does not build or
-run the backend or frontend.
+Built with **Java, Spring Boot, React, TypeScript, and PostgreSQL**, the backend combines layered domain modules, **Spring Data JPA Specifications**, **Liquibase** schema migrations, **Spring AOP** audit logging, and **Testcontainers** integration tests.
+
+## Demo
+https://github.com/user-attachments/assets/f2bbe93e-f19c-4018-8ddf-01dcf4200b04
+
+## Features
+
+- **Teams, Rosters & Transfers:** Create, update, and delete teams, view rosters and coaching staff, and manage player and coach transfers. Players and coaches can be queried both independently and through their teams.
+- **Players & Coaches:** Manage profiles, positions, experience, ratings, championships, and USD salaries.
+- **Role-Based Access Control (RBAC):** Separate Admin and User permissions. Admins manage all sports entities, transfers, and user accounts (including registration dates, last login, and linked sign-in providers); regular users have read access to sports data and manage their own profiles.
+- **OAuth2 / OIDC Authentication:** Sign in with form login, **Google**, **GitHub**, or a [Custom Authorization Server](https://github.com/nhordiienko23/MyCustomAuthServer), with verified external account linking.
+- **Dynamic Search & Pagination:** Server-side filtering via Spring Data JPA Specifications and `Pageable`, synced with browser URL parameters for bookmarking and history navigation (including multi-select OR filtering by player position).
+- **Audit Logging & Error Handling:** Centralized action auditing using Spring AOP and consistent API error responses via `@ControllerAdvice`.
+- **Frontend Experience:** Dark mode by default with persistent light/dark theme switching, inline form validation, and same-origin Vite proxy integration.
+
+## Technology Stack
+
+| Area | Technologies |
+| --- | --- |
+| Backend | Java 21, Spring Boot 3, Spring Web MVC, Spring Data JPA, Hibernate, Spring AOP, Liquibase |
+| Security | Spring Security, OAuth2 Client, OpenID Connect (OIDC), HttpOnly / SameSite=Lax Sessions |
+| Frontend | React, TypeScript, Vite |
+| Database | PostgreSQL 16 |
+| API Documentation | Springdoc OpenAPI, Swagger UI |
+| Testing & Coverage | JUnit 5, Mockito, Spring Boot Test, Spring Security Test, Testcontainers, JaCoCo |
+| Infrastructure & Build | Docker, Docker Compose, Maven, npm |
+
+## Architecture
+
+![Architecture Diagram](docs/architecture-diagram.png)
+### Backend Structure & Layers
+
+The backend is organized by domain (`team`, `player`, `coach`, `user`, `auth`, `audit`, `security`) across standard MVC layers:
+
+- **Controllers:** Handle HTTP requests, validation, pagination, and OpenAPI contracts.
+- **Services & Mappers:** Encapsulate business rules, roster transfers, transaction boundaries, and Entity-to-DTO mapping.
+- **Repositories & Specifications:** Execute persistence operations and build dynamic multi-criteria SQL queries.
+- **Security & Audit:** Manage OAuth2/OIDC flows, external identity linking, RBAC policies, and AOP-based audit logging.
+
+### Key Engineering Highlights
+
+- **Hardened OAuth2 / OIDC Account Linking:** External accounts bind to stable provider identifiers (OIDC `issuer` + `subject`, or GitHub numeric ID). First-time linking requires a trusted verified email (`email_verified: true` for configured OIDC issuers, or a primary verified email from GitHub's authenticated `/user/emails` API) — public profile and synthetic emails are never trusted.
+- **Dynamic Filtering Without Boilerplate Queries:** Uses Spring Data JPA `Specification` combined with `Pageable` to support flexible combinations of salary, experience, rating, championship, and multi-position filters in a single endpoint.
+- **Strict Database Schema Governance:** Liquibase manages all versioned migrations automatically on startup while Hibernate runs with `ddl-auto: validate`, preventing unintended schema drift.
+- **Real-Database Integration Testing:** Full controller, service, and repository test suites run against real PostgreSQL containers via Testcontainers, validating security rules, transactions, and queries end-to-end.
+
+## Getting Started
 
 ### Prerequisites
 
-- Java 21 and Maven
-- Node.js and npm
-- Docker with Docker Compose, or an available PostgreSQL 16 database
-- OAuth client credentials for each provider configured in the backend
+- **Java 21** and **Maven**
+- **Node.js** and **npm**
+- **Docker** with **Docker Compose** (or a local PostgreSQL 16 instance)
+- OAuth2 client credentials for the providers you want to test
 
-### Start locally
+### 1. Start PostgreSQL
 
-1. Start PostgreSQL with `docker compose up -d db`. The Compose database
-   credentials are for local development only.
-2. Configure the environment variables listed in [OAuth and environment
-   configuration](#oauth-and-environment-configuration). Set secrets in the
-   process environment or IDE run configuration; do not commit them to source
-   files.
-3. Start Spring Boot from the repository root with `mvn spring-boot:run`.
-4. In a second terminal, run `cd frontend`, `npm install`, and `npm run dev`.
-   Open `http://localhost:5173`. Vite proxies backend API, login, OAuth,
-   logout, Swagger and API-doc requests to `http://localhost:8080`.
+Docker Compose provisions the PostgreSQL database for local development (backend and frontend run separately):
 
-Run backend compilation and tests from the repository root:
-
-```shell
-mvn -q -DskipTests compile
-mvn -q test
+```bash
+docker compose up -d db
 ```
 
-Run frontend type checking and production build from `frontend`:
+### 2. Configure environment variables
 
-```shell
-npm run typecheck
-npm run build
+Set OAuth and database variables in your shell or IDE run configuration (never commit secrets to source files or frontend `.env` files):
+
+| Variable | Default / Notes | Purpose |
+| --- | --- | --- |
+| `SPRING_DATASOURCE_URL` | Local Compose DB | PostgreSQL JDBC URL |
+| `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` | Local dev defaults | PostgreSQL credentials |
+| `GOOGLE_CLIENTID`, `GOOGLE_SECRET` | — | Google OAuth2 credentials |
+| `GITHUB_CLIENTID`, `GITHUB_SECRET` | — | GitHub OAuth2 credentials |
+| `CUSTOM_AUTH_CLIENTID`, `CUSTOM_AUTH_SECRET` | — | Custom auth server credentials |
+| `CUSTOM_AUTH_ISSUER_URI` | `http://localhost:9000` | Custom OIDC issuer URI |
+| `CUSTOM_AUTH_AUTHORIZATION_URI`, `CUSTOM_AUTH_TOKEN_URI`, `CUSTOM_AUTH_USER_INFO_URI`, `CUSTOM_AUTH_JWK_SET_URI` | `http://localhost:9000/...` | Custom OIDC provider endpoints |
+| `TRUSTED_OIDC_ISSUERS` | `https://accounts.google.com` | Comma-separated OIDC issuers trusted for `email_verified: true` |
+| `GITHUB_EMAIL_URI` | `https://api.github.com/user/emails` | GitHub verified email API endpoint |
+| `SESSION_COOKIE_SECURE` | `true` | Set to `false` only for local HTTP development |
+| `FRONTEND_ORIGIN` | `http://localhost:5173` | Redirect origin after sign-in / logout |
+
+### 3. Start the backend
+
+From the repository root:
+
+```bash
+mvn spring-boot:run
 ```
 
-The frontend build is written to `frontend/dist`. No frontend test runner is
-currently configured.
+The API starts at `http://localhost:8080` and automatically applies Liquibase migrations.
 
-## OAuth and environment configuration
+### 4. Start the frontend
 
-The backend reads these environment variables:
+In a second terminal:
 
-| Variable | Purpose |
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open **[http://localhost:5173](http://localhost:5173)**. The Vite dev server proxies `/api/**`, `/login`, `/oauth2/**`, `/logout`, and Swagger requests to `http://localhost:8080`.
+
+### Local URLs
+
+| Component | URL |
 | --- | --- |
-| `SPRING_DATASOURCE_URL` | PostgreSQL JDBC URL (defaults to the local Compose database). |
-| `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` | Database credentials (defaults are local-development values only). |
-| `GOOGLE_CLIENTID`, `GOOGLE_SECRET` | Google OAuth client credentials. |
-| `GITHUB_CLIENTID`, `GITHUB_SECRET` | GitHub OAuth client credentials. |
-| `CUSTOM_AUTH_CLIENTID`, `CUSTOM_AUTH_SECRET` | Custom authorization-server client credentials. |
-| `CUSTOM_AUTH_ISSUER_URI` | Custom OIDC issuer; defaults to `http://localhost:9000` for local development. |
-| `CUSTOM_AUTH_AUTHORIZATION_URI`, `CUSTOM_AUTH_TOKEN_URI` | Custom-provider authorization and token endpoints; default to localhost on port 9000. |
-| `CUSTOM_AUTH_USER_INFO_URI`, `CUSTOM_AUTH_JWK_SET_URI` | Custom-provider user-info and JWK-set endpoints; default to localhost on port 9000. |
-| `TRUSTED_OIDC_ISSUERS` | Comma-separated OIDC issuers whose `email_verified: true` claim the application trusts. Defaults to `https://accounts.google.com`; include the custom issuer only after verifying its claim semantics. |
-| `GITHUB_EMAIL_URI` | GitHub authenticated-user email endpoint; defaults to `https://api.github.com/user/emails`. |
-| `SESSION_COOKIE_SECURE` | Secure-cookie flag; defaults to `true`. Set to `false` only for local HTTP development. |
-| `FRONTEND_ORIGIN` | Frontend origin for browser authentication redirects; defaults to `http://localhost:5173`. |
+| Frontend (Vite) | `http://localhost:5173` |
+| Backend API | `http://localhost:8080` |
+| Swagger UI | `http://localhost:8080/swagger-ui.html` (or via `:5173/swagger-ui.html`) |
+| OpenAPI Spec | `http://localhost:8080/v3/api-docs` |
 
-Form and OAuth sign-in success redirects to the frontend home page; failures
-redirect to `/sign-in?error` on that origin. Login/logout CSRF failures use
-`/sign-in?csrfError`, and logout success uses `/sign-in?logout`.
+## OAuth2 / OIDC Callback Setup
 
-Register OAuth callback URLs against the origin visible to the browser. With
-the Vite development server, that is normally
-`http://localhost:5173/login/oauth2/code/google`,
-`http://localhost:5173/login/oauth2/code/github`, and
-`http://localhost:5173/login/oauth2/code/my-custom-auth`. If accessing Spring
-directly instead, use the direct backend origin. The exact callback URI must
-match the URI generated by Spring; verify it through the provider redirect.
+Register these callback URLs with your OAuth providers when running through the Vite dev server (use your public HTTPS origin in production):
 
-The custom provider issuer and endpoint variables default to localhost URLs
-for local development on port 9000. Override them with the actual issuer and
-endpoint URLs outside local development. Add the custom issuer to
-`TRUSTED_OIDC_ISSUERS` only after confirming its email-verification semantics.
-Configure provider credentials and allow the public callback URI at each
-provider. Do not put credentials in Vite environment files: the frontend uses
-relative, same-origin URLs and does not need OAuth secrets.
+| Provider | Development Callback URL |
+| --- | --- |
+| Google | `http://localhost:5173/login/oauth2/code/google` |
+| GitHub | `http://localhost:5173/login/oauth2/code/github` |
+| Custom Auth Server | `http://localhost:5173/login/oauth2/code/my-custom-auth` |
 
-OAuth account linking uses the stable OIDC issuer/subject pair or GitHub
-numeric user ID after the first successful login. First-time linking or
-account creation requires a trusted verified email. Google is trusted by
-default only when OIDC supplies `email_verified: true`; custom OIDC issuers
-must be explicitly added to `TRUSTED_OIDC_ISSUERS` after confirming their
-verification guarantees. GitHub email is read from its authenticated
-`/user/emails` API using the `user:email` scope and must be both primary and
-verified. The public GitHub profile email and synthetic addresses are never
-used to link or create accounts. The Liquibase external-identity migration is
-`012-create-external-identities-table`.
+<details>
+<summary>Production deployment checklist</summary>
 
-The secure session cookie defaults to `Secure`. Set
-`SESSION_COOKIE_SECURE=false` only when running locally over HTTP; use HTTPS
-and leave it enabled in deployed environments.
+- Serve `frontend/dist` and proxy backend routes (`/api/**`, `/login`, `/login/oauth2/**`, `/oauth2/authorization/**`, `/logout`, `/swagger-ui/**`, `/v3/api-docs/**`, `/error`) from the same public HTTPS origin before SPA fallback.
+- Keep `SESSION_COOKIE_SECURE=true` and configure trusted reverse-proxy forwarded headers.
+- Replace all local DB credentials, callback URLs, and custom OIDC endpoints (`localhost:9000`) with production values.
 
-Liquibase runs automatically on backend startup using
-`classpath:/db/changelog/db.changelog-master.yaml`. The database must be
-reachable and compatible with the migrations. `spring.jpa.hibernate.ddl-auto`
-is `validate`; schema changes are managed by Liquibase.
+</details>
 
-## Production-like deployment requirements
+## Testing & Code Coverage
 
-This repository does not include production reverse-proxy, static hosting, or
-OAuth-provider infrastructure. A deployment must provide these separately:
+### Backend
 
-- Build the frontend with `npm run build` and serve `frontend/dist` from the
-  same public origin as Spring Boot.
-- Route backend paths to Spring before the SPA fallback: `/api/**`, `/login`,
-  `/login/oauth2/**`, `/oauth2/authorization/**`, `/logout`,
-  `/swagger-ui.html`, `/swagger-ui/**`, `/v3/api-docs/**`, and `/error`.
-  Serve missing static assets as 404s; use the SPA entry point only for
-  frontend routes.
-- Serve the public origin over HTTPS and set `SESSION_COOKIE_SECURE=true`.
-  The current backend cookie configuration is HttpOnly and SameSite=Lax;
-  verify cookie/session behavior through each OAuth callback and deployment
-  proxy. The trusted proxy must overwrite incoming forwarded headers, and
-  Spring must only honor forwarded scheme/host values from that proxy.
-- Configure Google, GitHub, and custom-provider credentials and callback URLs
-  for the deployed public origin. Set all custom-provider issuer and endpoint
-  variables to the production authorization server; do not use localhost
-  provider URLs in deployed environments.
-- Provide production PostgreSQL URL and credentials through
-  `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, and
-  `SPRING_DATASOURCE_PASSWORD`; verify Liquibase can apply the changelog.
-- Define operational session lifetime, backups, secrets management, proxy
-  behavior and monitoring in the deployment environment. None are provisioned
-  by this repository.
+The test suite includes unit tests (Mockito) for business logic, mappers, validation, and specifications, plus **Testcontainers** integration tests for controllers, services, repositories, and security flows against PostgreSQL (requires Docker running).
 
-The development proxy and local OAuth setup do not verify a production
-deployment. Provider callback, HTTPS cookie, proxy routing and browser-level
-login/logout flows must be tested in the target environment before release.
-
-## Administrator user details
-
-The administrator user list and detail endpoint expose account ID, username,
-email, roles, registration time, latest successful login, and linked sign-in
-provider names. The latest login is a single timestamp, not a login history;
-accounts without a successful login return a null timestamp and the frontend
-shows “Never signed in.” Timestamps retain the backend's timezone-free
-`LocalDateTime` meaning and are displayed as server-local wall time. Provider
-subjects, tokens, credentials, and raw OIDC issuer URLs are not returned.
-
-## Salary, theme, search, and validation
-
-Player and coach salary values are stored and sent by the API as numeric USD
-amounts. The frontend displays them as dollars (for example, `$1,250.00`) and
-labels salary filters and editing fields in USD; it does not convert or change
-stored values.
-
-Dark mode is the first-visit default. The theme switch is available on sign-in,
-registration, and authenticated pages, and the selected light or dark theme is
-saved in the browser for later visits.
-
-Directory filters remain in the page URL, so they can be bookmarked and restored
-with browser back and forward. Player positions can be selected together;
-results match any selected position, and no selection includes all positions.
-Sign-in, registration, profile, and administrator account forms show English
-inline validation, including an email format example.
-
-Sign-in and registration offer Google, GitHub, and the custom authorization
-server through the existing OAuth/OIDC flows. See
-[OAuth and environment configuration](#oauth-and-environment-configuration)
-for provider credentials, issuer trust, and callback setup.
-
-## 🚀 Key Features
-
-* **Role-Based Access Control:** Separate Admin and User capabilities. Admins can create, update, and delete teams, players, coaches, and user accounts, manage team rosters, and perform player and coach transfers. Regular users have read access to team, player, and coach information and can manage their own profiles.
-* **Team & Roster Management:** Manage and view teams, team rosters, coaching staff, and team members. Players and coaches can also be retrieved independently from their associated teams.
-* **RESTful API & Pagination:** REST endpoints for managing teams, players, coaches, and users with server-side pagination using `Pageable`.
-* **Advanced Filtering & Search:** Dynamic filtering using Spring Data JPA Specifications, including criteria such as salary, experience, ratings, positions, and championships.
-* **Security & Authentication:** OAuth2/OIDC authentication with Google, GitHub, and a custom authorization server, combined with role-based access control for Admin and User operations.
-* **Audit Logging:** AOP-based logging and auditing of important application actions and method execution.
-* **Database Migrations:** Version-controlled database schema changes managed with Liquibase.
-* **Centralized Exception Handling:** Global exception handling with `@ControllerAdvice` for consistent API error responses.
-* **API Documentation:** Interactive API documentation and endpoint testing with Springdoc OpenAPI and Swagger UI.
-* **Integration Testing:** Integration tests for controllers, services, and repositories using JUnit 5, Spring Boot Test, Spring Security Test, Testcontainers, and PostgreSQL.
-* **Unit Testing:** Unit tests with JUnit 5 and Mockito for business logic, DTO validation, mappers, specifications, and exception handling.
-* **Local Infrastructure:** Docker Compose provisions the PostgreSQL database for development and integration testing.
-
-## 🛠 Tech Stack
-
-* **Core:** Java 21, Spring Boot 3
-* **Data Access:** Spring Data JPA, Hibernate
-* **Database:** PostgreSQL 16
-* **Database Migrations:** Liquibase
-* **Security:** Spring Security (OAuth2 / OIDC)
-* **Build Tool:** Maven
-* **Infrastructure:** Docker & Docker Compose
-* **Documentation:** Springdoc OpenAPI (Swagger UI)
-* **Testing:** JUnit 5, Spring Boot Test, Testcontainers (Integration Testing)
-
-## 🏗 Project Architecture
-
-The project follows a domain-driven package structure (`coach`, `player`, `team`, `user`, `auth`, `audit`, `security`) and implements a classic layered MVC architecture:
-
-* **Controllers:** Handle HTTP requests, validate input, and delegate operations to services.
-* **Services:** Contain business logic and transaction boundaries.
-* **Repositories:** Provide data access through Spring Data JPA.
-* **Specifications:** Build dynamic database queries for filtering and searching.
-* **Mappers:** Convert between entities and DTOs, keeping the persistence model separated from the API layer.
-* **Security:** Contains OAuth2/OIDC authentication, authorization, custom user services, and security-related handlers.
-* **Audit:** Provides centralized application logging and audit tracking using Spring AOP.
-  
-### Configuration & Infrastructure Files
-
-* **`docker-compose.yml`**: Defines the PostgreSQL development database; no application or frontend container is configured.
-* **`application.yml`**: Contains application configuration and environment-based settings for database and OAuth2 providers.
-* **`Liquibase changelogs`**: Manage version-controlled database schema changes.
-
-## 🔑 OAuth2 Configuration Setup
-
-This application is configured to act as an OAuth2 client, allowing users to log in via Google, GitHub, or a Custom Authorization Server (like [MyCustomAuthServer](https://github.com/nhordiienko23/MyCustomAuthServer)).
-
-Configure OAuth credentials in the backend process environment or IDE run
-configuration. Docker Compose in this repository starts only PostgreSQL; it
-does not pass OAuth variables to an application container.
-
-### Required Environment Variables
-
-You need to obtain Client IDs and Client Secrets from the respective providers and set them as environment variables:
-
-#### 1. Google OAuth2
-* Go to the [Google Cloud Console](https://console.cloud.google.com/).
-* Create a project and set up OAuth 2.0 Client IDs.
-* For the Vite development server, set the Redirect URI to:
-  `http://localhost:5173/login/oauth2/code/google`. For production, use the
-  deployed public origin.
-* **Environment Variables:**
-  * `GOOGLE_CLIENTID`: Your Google Client ID
-  * `GOOGLE_SECRET`: Your Google Client Secret
-
-#### 2. GitHub OAuth2
-* Go to your GitHub Developer Settings -> [OAuth Apps](https://github.com/settings/developers).
-* Register a new OAuth application.
-* For the Vite development server, set the callback URL to:
-  `http://localhost:5173/login/oauth2/code/github`. For production, use the
-  deployed public origin.
-* **Environment Variables:**
-  * `GITHUB_CLIENTID`: Your GitHub Client ID
-  * `GITHUB_SECRET`: Your GitHub Client Secret
-
-#### 3. Custom Authorization Server (MyCustomAuthServer)
-If you are using the custom auth server, ensure it is running and set
-`CUSTOM_AUTH_ISSUER_URI` plus all four endpoint variables to its actual URLs.
-For a local server listening on port 9000, those values may use
-`http://localhost:9000`; the application does not supply these defaults.
-* Set its development callback URI to:
-  `http://localhost:5173/login/oauth2/code/my-custom-auth`. For production,
-  use the deployed public origin.
-* **Environment Variables:**
-  * `CUSTOM_AUTH_CLIENTID`: custom OAuth client ID
-  * `CUSTOM_AUTH_SECRET`: custom OAuth client secret
-
-### Provider endpoint configuration
-
-The environment variables map directly to the `application.yml` configuration as follows:
-
-```yaml
-spring:
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENTID}
-            client-secret: ${GOOGLE_SECRET}
-            scope: [openid, profile, email]
-          github:
-            client-id: ${GITHUB_CLIENTID}
-            client-secret: ${GITHUB_SECRET}
-            scope: [read:user, user:email]
-          my-custom-auth:
-            client-name: My Custom Auth
-            client-id: ${CUSTOM_AUTH_CLIENTID}
-            client-secret: ${CUSTOM_AUTH_SECRET}
-            authorization-grant-type: authorization_code
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-            scope:
-              - openid
-              - profile
-              - email
-        provider:
-          google:
-            user-name-attribute: sub
-          github:
-            user-name-attribute: id
-          my-custom-auth:
-            authorization-uri: ${CUSTOM_AUTH_AUTHORIZATION_URI}
-            token-uri: ${CUSTOM_AUTH_TOKEN_URI}
-            user-info-uri: ${CUSTOM_AUTH_USER_INFO_URI}
-            jwk-set-uri: ${CUSTOM_AUTH_JWK_SET_URI}
-            user-name-attribute: sub
-app:
-  oauth2:
-    google-oidc-issuer: https://accounts.google.com
-    custom-oidc-issuer: ${CUSTOM_AUTH_ISSUER_URI}
-    trusted-oidc-issuers: ${TRUSTED_OIDC_ISSUERS:https://accounts.google.com}
-```
-## 🧪 Testing
-
-The application places a strong emphasis on reliability through extensive integration testing. 
-* **Integration Tests:** The `src/test/java/com/nba/` directory contains comprehensive test suites for Controllers, Services, and Repositories (e.g., `AdminCoachControllerIntegrationTest`, `CoachControllerIntegrationTest`, `UserControllerIntegrationTest`).
-* These tests ensure that the Spring context loads correctly and that the application interacts seamlessly with the PostgreSQL database.
-
-### Test coverage
-
-Run the full test suite and generate JaCoCo coverage reports with:
+Run all tests and generate the JaCoCo coverage report from the repository root:
 
 ```bash
 mvn clean verify
 ```
 
-Integration tests use Testcontainers and require Docker to be running. Open `target/site/jacoco/index.html` for the HTML report; the XML report is at `target/site/jacoco/jacoco.xml`. Reports include all production classes and do not enforce a minimum coverage threshold. The report is generated during `verify`, so `mvn test` alone does not generate it. Running only a subset of tests produces partial coverage.
+| Metric | Covered | Total | Coverage |
+| --- | ---: | ---: | ---: |
+| Instructions | 6,396 | 6,968 | **91%** |
+| Branches | 339 | 384 | **88%** |
+| Lines | 1,193 | 1,248 | **96%** |
+| Methods | 512 | 573 | **89%** |
+| Classes | 122 | 123 | **99%** |
 
-## 🚀 Quick Start
+- HTML coverage report: `target/site/jacoco/index.html`
+- XML coverage report: `target/site/jacoco/jacoco.xml`
 
-### Prerequisites
-* **Java 21**
-* **Maven** 
-* **Node.js and npm**
-* **Docker & Docker Compose** or PostgreSQL 16
+### Frontend
 
-### Run the database, backend, and frontend
+From the `frontend` directory:
 
-Follow [Start locally](#start-locally), including OAuth environment setup.
-Swagger UI is available at `http://localhost:8080/swagger-ui.html` when
-accessing the backend directly, or through the Vite proxy at
-`http://localhost:5173/swagger-ui.html` after authentication.
+```bash
+npm run typecheck
+npm run build
+```
+
+The production bundle is generated in `frontend/dist`.
+
+## Project Structure
+
+```text
+team-management-system/
+├── src/
+│   ├── main/
+│   │   ├── java/.../         # Domain packages: team, player, coach, user, auth, audit, security
+│   │   └── resources/        # application.yml & Liquibase changelogs
+│   └── test/                 # Unit tests & Testcontainers integration tests
+├── frontend/                 # React + TypeScript + Vite SPA
+├── docs/                     # Architecture diagram, UI screenshots, and coverage report
+├── docker-compose.yml        # PostgreSQL 16 database for local development
+└── pom.xml                   # Maven configuration, dependencies, JaCoCo setup
+```
+
+## Screenshots
+
+
+### Sign In (Form & OAuth2 / OIDC)
+![sign-in.png](docs/sign-in.png)
+
+### Home Page
+![home.png](docs/home.png)
+### Teams Directory & Dynamic Filtering
+![teams-directory.png](docs/teams-directory.png)
+
+### Team Roster & Coaching Staff
+![team-details.png](docs/team-details.png)
+
+### Player Details & Teammates
+![player-details.png](docs/player-details.png)
+
+### Admin User Management & Linked Providers
+![admin-users_1.png](docs/admin-users_1.png)
+![admin-users_2.png](docs/admin-users_2.png)
+### JaCoCo Coverage Report
+![jacoco-report.png](docs/jacoco-report.png)
+
+## Author
+
+**Mykyta Hordiienko** — [GitHub](https://github.com/nhordiienko23)

@@ -121,6 +121,16 @@ The application places a strong emphasis on reliability through extensive integr
 * **Integration Tests:** The `src/test/java/com/nba/` directory contains comprehensive test suites for Controllers, Services, and Repositories (e.g., `AdminCoachControllerIntegrationTest`, `CoachControllerIntegrationTest`, `UserControllerIntegrationTest`).
 * These tests ensure that the Spring context loads correctly and that the application interacts seamlessly with the PostgreSQL database.
 
+### Test coverage
+
+Run the full test suite and generate JaCoCo coverage reports with:
+
+```bash
+mvn clean verify
+```
+
+Integration tests use Testcontainers and require Docker to be running. Open `target/site/jacoco/index.html` for the HTML report; the XML report is at `target/site/jacoco/jacoco.xml`. Reports include all production classes and do not enforce a minimum coverage threshold. The report is generated during `verify`, so `mvn test` alone does not generate it. Running only a subset of tests produces partial coverage.
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -159,4 +169,3 @@ Open your browser and navigate to the interactive Swagger UI:
 ```
 http://localhost:8080/swagger-ui.html
 ```
-
